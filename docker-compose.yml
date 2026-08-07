@@ -1,0 +1,41 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      WATCHPACK_POLLING: "true"
+    working_dir: /app
+    command: sh -c "npm install && npm run dev"
+    restart: unless-stopped
+
+  python:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    working_dir: /app
+    volumes:
+      - .:/app
+    environment:
+      PYTHONUNBUFFERED: "1"
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_KEY}
+    command: python proposal_monitor.py
+
+  python-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.python.dev
+    working_dir: /app
+    volumes:
+      - .:/app
+    environment:
+      PYTHONUNBUFFERED: "1"
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_KEY}
+    command: python proposal_monitor.py
