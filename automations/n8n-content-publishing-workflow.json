@@ -1,0 +1,70 @@
+{
+  "name": "Approved content publishing handoff",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "content-approved",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "1",
+      "name": "Approved content webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.approval_status }}",
+              "rightValue": "approved",
+              "operator": { "type": "string", "operation": "equals" }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2",
+      "name": "Approval gate",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://replace-with-your-publishing-endpoint.example/api/posts",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "3",
+      "name": "Publish to configured platform",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [440, -80]
+    },
+    {
+      "parameters": { "respondWith": "json", "responseBody": "={\"accepted\": true}" },
+      "id": "4",
+      "name": "Confirm publishing handoff",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [660, -80]
+    }
+  ],
+  "connections": {
+    "Approved content webhook": { "main": [[{ "node": "Approval gate", "type": "main", "index": 0 }]] },
+    "Approval gate": { "main": [[{ "node": "Publish to configured platform", "type": "main", "index": 0 }], []] },
+    "Publish to configured platform": { "main": [[{ "node": "Confirm publishing handoff", "type": "main", "index": 0 }]] }
+  },
+  "pinData": {},
+  "settings": { "executionOrder": "v1" },
+  "active": false,
+  "versionId": "content-handoff-v1"
+}

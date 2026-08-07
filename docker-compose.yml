@@ -3,13 +3,18 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+        NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY}
     ports:
-      - "3000:3000"
+      - "3001:3000"
     volumes:
       - .:/app
       - /app/node_modules
     environment:
       WATCHPACK_POLLING: "true"
+      NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY}
     working_dir: /app
     command: sh -c "npm install && npm run dev"
     restart: unless-stopped
@@ -25,7 +30,7 @@ services:
       PYTHONUNBUFFERED: "1"
       SUPABASE_URL: ${SUPABASE_URL}
       SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_KEY}
-    command: python proposal_monitor.py
+    command: python proposal_monitor_runtime.py
 
   python-dev:
     build:
@@ -38,4 +43,54 @@ services:
       PYTHONUNBUFFERED: "1"
       SUPABASE_URL: ${SUPABASE_URL}
       SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_KEY}
-    command: python proposal_monitor.py
+    command: python proposal_monitor_runtime.py
+
+  mygov-alerts:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    working_dir: /app
+    volumes:
+      - .:/app
+    environment:
+      PYTHONUNBUFFERED: "1"
+      ALERT_EMAIL_TO: ${ALERT_EMAIL_TO}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USERNAME: ${SMTP_USERNAME}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      SMTP_FROM: ${SMTP_FROM}
+      MYGOV_ALERT_HOUR: ${MYGOV_ALERT_HOUR:-9}
+      MYGOV_ALERT_MINUTE: ${MYGOV_ALERT_MINUTE:-0}
+    command: python mygov_alert_scheduler.py
+    restart: unless-stopped
+
+  content-dispatcher:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    working_dir: /app
+    volumes:
+      - .:/app
+    environment:
+      PYTHONUNBUFFERED: "1"
+      CONTENT_PUBLISH_WEBHOOK_URL: ${CONTENT_PUBLISH_WEBHOOK_URL:-http://n8n:5678/webhook/content-approved}
+      CONTENT_DISPATCH_INTERVAL_SECONDS: ${CONTENT_DISPATCH_INTERVAL_SECONDS:-60}
+    command: python content_dispatcher.py
+    depends_on:
+      - n8n
+    restart: unless-stopped
+
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    ports:
+      - "5678:5678"
+    environment:
+      GENERIC_TIMEZONE: Africa/Nairobi
+      TZ: Africa/Nairobi
+    volumes:
+      - n8n_data:/home/node/.n8n
+    restart: unless-stopped
+
+volumes:
+  n8n_data:

@@ -1,8 +1,8 @@
 import './globals.css';
 
 export const metadata = {
-  title: 'Scriper Tester',
-  description: 'Dockerized Python and Next.js workspace',
+  title: 'Proposal Monitor',
+  description: 'Proposal opportunities, alerts, and workflow tracking',
 };
 
 export default function RootLayout({ children }) {

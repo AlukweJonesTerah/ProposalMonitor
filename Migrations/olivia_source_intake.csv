@@ -1,0 +1,7 @@
+source_name,start_url,allowed_domain,source_type,priority,check_frequency,active,owner,notes
+myGov Kenya,https://gaa.go.ke/all-tenders,gaa.go.ke,mygov,High,Tuesday and Thursday,true,Project team,Verified with live keyword test
+Public Procurement Information Portal,https://tenders.go.ke/tenders,tenders.go.ke,national_procurement_portal,High,Weekdays,false,Project team,Reachable but JavaScript-rendered; add browser-based adapter before activation
+Kenya Revenue Authority,https://www.kra.go.ke/tenders,kra.go.ke,government_agency,High,Weekdays,true,Project team,Verified starter source
+National Environment Management Authority,https://nema.go.ke/tenders/,nema.go.ke,government_agency,Medium,Weekdays,true,Project team,Verified starter source
+Public Procurement Regulatory Authority,https://ppra.go.ke/category/tenders/,ppra.go.ke,government_agency,Medium,Weekdays,true,Project team,Verified starter source
+Olivia to provide,,,,,Weekdays,false,Olivia,Add one approved proposal or tender portal per row

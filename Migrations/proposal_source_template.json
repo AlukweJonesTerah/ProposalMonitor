@@ -1,0 +1,23 @@
+{
+  "keywords": ["analytics", "data science", "training"],
+  "sources": [
+    {
+      "name": "myGov Kenya",
+      "source_type": "mygov",
+      "start_urls": ["https://gaa.go.ke/index.php/all-tenders"],
+      "allowed_domains": ["gaa.go.ke"],
+      "max_links": 80,
+      "active": true,
+      "check_frequency": "Tuesday and Thursday"
+    },
+    {
+      "name": "Olivia: ministry or donor portal",
+      "source_type": "ministry",
+      "start_urls": [],
+      "allowed_domains": [],
+      "max_links": 80,
+      "active": false,
+      "check_frequency": "Weekdays"
+    }
+  ]
+}
