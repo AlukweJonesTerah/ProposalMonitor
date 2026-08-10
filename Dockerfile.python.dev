@@ -20,4 +20,4 @@ COPY . .
 RUN addgroup --system app && adduser --system --ingroup app app
 USER app
 
-CMD ["python", "proposal_monitor.py"]
+CMD ["python", "proposal_hybrid_monitor.py"]

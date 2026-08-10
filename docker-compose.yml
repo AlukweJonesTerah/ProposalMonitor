@@ -30,7 +30,11 @@ services:
       PYTHONUNBUFFERED: "1"
       SUPABASE_URL: ${SUPABASE_URL}
       SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_KEY}
-    command: python proposal_monitor_runtime.py
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash}
+      GEMINI_BATCH_SIZE: ${GEMINI_BATCH_SIZE:-10}
+      AI_CLASSIFICATION_LIMIT: ${AI_CLASSIFICATION_LIMIT:-30}
+    command: python proposal_hybrid_monitor.py
 
   python-dev:
     build:
@@ -43,7 +47,11 @@ services:
       PYTHONUNBUFFERED: "1"
       SUPABASE_URL: ${SUPABASE_URL}
       SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_KEY}
-    command: python proposal_monitor_runtime.py
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash}
+      GEMINI_BATCH_SIZE: ${GEMINI_BATCH_SIZE:-10}
+      AI_CLASSIFICATION_LIMIT: ${AI_CLASSIFICATION_LIMIT:-30}
+    command: python proposal_hybrid_monitor.py
 
   mygov-alerts:
     build:
@@ -60,6 +68,12 @@ services:
       SMTP_USERNAME: ${SMTP_USERNAME}
       SMTP_PASSWORD: ${SMTP_PASSWORD}
       SMTP_FROM: ${SMTP_FROM}
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_KEY}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash}
+      GEMINI_BATCH_SIZE: ${GEMINI_BATCH_SIZE:-10}
+      AI_CLASSIFICATION_LIMIT: ${AI_CLASSIFICATION_LIMIT:-30}
       MYGOV_ALERT_HOUR: ${MYGOV_ALERT_HOUR:-9}
       MYGOV_ALERT_MINUTE: ${MYGOV_ALERT_MINUTE:-0}
     command: python mygov_alert_scheduler.py

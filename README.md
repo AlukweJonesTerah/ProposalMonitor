@@ -258,6 +258,34 @@ email accidentally. It records each completed daily check in
 `proposal_output/mygov_schedule_state.json`; the monitor separately prevents
 the same opportunity from being emailed twice.
 
+### Test email delivery
+
+After adding `ALERT_EMAIL_TO` and `SMTP_*` values to `.env`, send one test
+email without running the scraper or changing alert history:
+
+```powershell
+python mygov_alert_scheduler.py --test-email
+```
+
+For Gmail, use an App Password rather than your normal Google password:
+
+1. Enable 2-Step Verification for the sending Google account.
+2. Open Google Account **Security** > **App passwords** and create one named
+   `Proposal Monitor`.
+3. Put the generated password in `SMTP_PASSWORD`.
+
+```ini
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=your-gmail@gmail.com
+SMTP_PASSWORD=your-google-app-password
+SMTP_FROM=your-gmail@gmail.com
+ALERT_EMAIL_TO=recipient@example.com
+```
+
+Never commit `.env` or share the SMTP password. If Google Workspace does not
+show App passwords, ask the Workspace administrator to approve an SMTP method.
+
 ## Gemini-powered research agent
 
 `proposal_research_agent.py` is an optional AI-assisted discovery path. It uses

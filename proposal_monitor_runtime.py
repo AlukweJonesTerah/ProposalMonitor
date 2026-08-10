@@ -233,17 +233,17 @@ def export(proposals: list[dict[str, str]], output: Path, workflow_state: dict[s
     book = Workbook()
     proposals_sheet = book.active
     proposals_sheet.title = "Proposals"
-    headings = ["Tracker ID", "Proposal name", "Category", "Website link", "Due date", "Source", "Matched keywords", "Status", "Owner", "Date found", "Notes"]
+    headings = ["Tracker ID", "Proposal name", "Category", "Website link", "Due date", "Source", "Matched keywords", "Relevance", "Why it matches", "Eligibility notes", "Recommended action", "Status", "Owner", "Date found", "Notes"]
     proposals_sheet.append(headings)
     for item in sorted(proposals, key=lambda row: (row["due_date"] == "Not stated", row["due_date"], row["name"].lower())):
         deadline = datetime.fromisoformat(item["due_date"]).date() if item["due_date"] != "Not stated" else "Not stated"
         task = workflow_state[item_id(item)]
-        proposals_sheet.append([item_id(item), item["name"], item["category"], item["link"], deadline, item["source"], item["keywords"], task["status"], task["owner"], date.today(), ""])
+        proposals_sheet.append([item_id(item), item["name"], item["category"], item["link"], deadline, item["source"], item["keywords"], item.get("relevance_score", ""), item.get("match_reason", ""), item.get("eligibility_notes", ""), item.get("recommended_action", ""), task["status"], task["owner"], date.today(), ""])
     format_sheet(proposals_sheet, headings)
     for cell in proposals_sheet["E"][1:]:
         if isinstance(cell.value, date):
             cell.number_format = "yyyy-mm-dd"
-    for cell in proposals_sheet["J"][1:]:
+    for cell in proposals_sheet["N"][1:]:
         cell.number_format = "yyyy-mm-dd"
     run_date = date.today()
     workplan_headings = ["Task", "Owner", "Start date", "Due date", "Status", "Dependencies", "Notes"]
