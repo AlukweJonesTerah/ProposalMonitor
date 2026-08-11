@@ -65,7 +65,7 @@ export default function Dashboard() {
         <label className="search"><span className="srOnly">Search opportunities</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search opportunities, sources, or categories..." /></label>
         <a className="sources" href="/sources/review">Source review</a>
       </div>
-      <nav><a className="active" href="#dashboard">Dashboard</a><a href="#opportunities">Opportunities</a><a href="#opportunities">High priority</a><a href="/opportunities/history">Previous opportunities</a><a href="#intake">Source intake</a><a href="/api/download">Download Excel</a></nav>
+      <nav><a className="active" href="/">Dashboard</a><a href="/opportunities">Opportunities</a><a href="/opportunities/high-priority">High priority</a><a href="/opportunities/history">Previous opportunities</a><a href="/sources/intake">Source intake</a><a href="/api/download">Download Excel</a></nav>
     </header>
 
     <div className="keywordStrip"><span>Monitoring for</span>{(data.keywords || []).map((keyword) => <b key={keyword}>{keyword}</b>)}</div>

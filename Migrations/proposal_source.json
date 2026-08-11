@@ -113,6 +113,19 @@
       "max_links": 40,
       "active": true,
       "check_frequency": "Every monitor run"
+    },
+    {
+      "name": "bluedot-network.org",
+      "source_type": "managed_source",
+      "start_urls": [
+        "https://www.bluedot-network.org/"
+      ],
+      "allowed_domains": [
+        "bluedot-network.org"
+      ],
+      "max_links": 40,
+      "active": true,
+      "check_frequency": "Every monitor run"
     }
   ]
 }
