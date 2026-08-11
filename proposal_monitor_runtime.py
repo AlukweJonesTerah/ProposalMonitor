@@ -4,16 +4,19 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+from html import escape
 import json
 import logging
 import os
 import re
 import smtplib
-from datetime import date, datetime, timedelta
+import time
+from datetime import date, datetime, timedelta, timezone
 from email.message import EmailMessage
 from io import BytesIO
 from pathlib import Path
 from urllib.parse import urljoin, urlparse, urlunparse
+from urllib.robotparser import RobotFileParser
 
 import requests
 from bs4 import BeautifulSoup
@@ -32,7 +35,11 @@ ROOT = Path(__file__).resolve().parent
 OUTPUT = ROOT / "proposal_output"
 WORKFLOW_STATE_FILE = OUTPUT / "proposal_workflow_state.json"
 PENDING_SOURCE_FILE = ROOT / "Migrations" / "pending_source_intake.json"
-DISCOVERY_TERMS = ("tender", "proposal", "rfp", "consultancy", "procurement")
+DISCOVERY_TERMS = ("tender", "proposal", "rfp", "consultancy", "procurement", "grant", "funding", "certification", "certification offer", "paper proposal", "call for papers")
+REQUEST_INTERVAL_SECONDS = 1.5
+MAX_FETCH_ATTEMPTS = 3
+_robots_cache: dict[str, RobotFileParser | None] = {}
+_next_request_at: dict[str, float] = {}
 DATE_PATTERNS = (
     re.compile(
         r"(?:closing date|deadline|due date|submission date|submit(?:ted)? by|closes? on|on or before|received on or before)"
@@ -79,6 +86,12 @@ def due_date(text: str) -> str:
 
 def category(matches: list[str]) -> str:
     terms = " ".join(matches).lower()
+    if "paper proposal" in terms or "call for papers" in terms:
+        return "Paper proposal"
+    if "grant" in terms:
+        return "Grant"
+    if "certification" in terms:
+        return "Certification"
     if "data science" in terms:
         return "Data science"
     if "analytics" in terms:
@@ -88,8 +101,68 @@ def category(matches: list[str]) -> str:
     return "Other"
 
 
+def _origin(url: str) -> str:
+    parsed = urlparse(url)
+    return f"{parsed.scheme}://{parsed.netloc}"
+
+
+def _request_headers() -> dict[str, str]:
+    return {"User-Agent": os.getenv("SCRAPER_USER_AGENT", "ProposalMonitor/1.0 (+contact your technical owner)")}
+
+
+def _robots_policy(session: requests.Session, url: str) -> RobotFileParser | None:
+    """Return a site's robots policy when it is available; cache it per origin."""
+    origin = _origin(url)
+    if origin in _robots_cache:
+        return _robots_cache[origin]
+    robots_url = f"{origin}/robots.txt"
+    try:
+        response = session.get(robots_url, timeout=15, headers=_request_headers())
+        if not response.ok:
+            _robots_cache[origin] = None
+            return None
+        policy = RobotFileParser()
+        policy.set_url(robots_url)
+        policy.parse(response.text.splitlines())
+        _robots_cache[origin] = policy
+        return policy
+    except requests.RequestException:
+        # An unavailable robots file is not treated as permission to bypass an
+        # access control; the actual request will still respect HTTP responses.
+        _robots_cache[origin] = None
+        return None
+
+
+def _pace(origin: str) -> None:
+    interval = max(0.5, float(os.getenv("SCRAPER_REQUEST_INTERVAL_SECONDS", str(REQUEST_INTERVAL_SECONDS))))
+    wait = _next_request_at.get(origin, 0) - time.monotonic()
+    if wait > 0:
+        time.sleep(wait)
+    _next_request_at[origin] = time.monotonic() + interval
+
+
 def fetch(session: requests.Session, url: str) -> tuple[str, str]:
-    response = session.get(url, timeout=30, headers={"User-Agent": "ProposalMonitor/1.0"})
+    """Fetch a public page politely; do not bypass robots rules or access controls."""
+    origin = _origin(url)
+    policy = _robots_policy(session, url)
+    user_agent = _request_headers()["User-Agent"]
+    if policy and not policy.can_fetch(user_agent, url):
+        raise requests.exceptions.RequestException(f"robots.txt disallows this crawler: {url}")
+
+    response = None
+    for attempt in range(MAX_FETCH_ATTEMPTS):
+        _pace(origin)
+        response = session.get(url, timeout=30, headers=_request_headers())
+        if response.status_code not in (429, 500, 502, 503, 504) or attempt == MAX_FETCH_ATTEMPTS - 1:
+            break
+        retry_after = response.headers.get("Retry-After")
+        try:
+            delay = min(60.0, max(1.0, float(retry_after))) if retry_after else 2.0 * (attempt + 1)
+        except ValueError:
+            delay = 2.0 * (attempt + 1)
+        print(f"Temporary response {response.status_code} from {origin}; waiting {delay:g}s before retrying.")
+        time.sleep(delay)
+    assert response is not None
     response.raise_for_status()
     content_type = response.headers.get("content-type", "").lower()
     if "pdf" in content_type or urlparse(url).path.lower().endswith(".pdf"):
@@ -274,6 +347,75 @@ def export(proposals: list[dict[str, str]], output: Path, workflow_state: dict[s
     book.save(output)
 
 
+def write_dashboard_results(proposals: list[dict[str, str]], workflow_state: dict[str, dict[str, str]]) -> None:
+    """Write the compact result snapshot consumed by the web dashboard."""
+    rows = []
+    for proposal in proposals:
+        task = workflow_state.get(item_id(proposal), {})
+        rows.append({
+            "id": item_id(proposal),
+            "name": proposal.get("name", "Untitled proposal"),
+            "category": proposal.get("category", "Other"),
+            "link": proposal.get("link", ""),
+            "due_date": proposal.get("due_date", "Not stated"),
+            "source": proposal.get("source", "Unknown source"),
+            "keywords": proposal.get("keywords", ""),
+            "relevance_score": proposal.get("relevance_score", ""),
+            "match_reason": proposal.get("match_reason", ""),
+            "eligibility_notes": proposal.get("eligibility_notes", ""),
+            "recommended_action": proposal.get("recommended_action", "Review"),
+            "status": task.get("status", "Review required"),
+            "owner": task.get("owner", "Project team"),
+            "review_due_date": task.get("review_due_date", ""),
+        })
+    OUTPUT.mkdir(exist_ok=True)
+    (OUTPUT / "proposals.json").write_text(json.dumps({
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "count": len(rows),
+        "proposals": rows,
+    }, indent=2), encoding="utf-8")
+
+
+def proposal_alert_text(items: list[dict[str, str]]) -> str:
+    """Build the plain-text fallback for a myGov proposal alert."""
+    return "New myGov proposals matching your keywords:\n\n" + "\n\n".join(
+        f"{item['name']}\n"
+        f"Category: {item['category']}\n"
+        f"Due: {item['due_date']}\n"
+        f"View opportunity: {item['link']}"
+        for item in items
+    )
+
+
+def proposal_alert_html(items: list[dict[str, str]]) -> str:
+    """Build a self-contained, email-client-safe HTML myGov alert."""
+    count = len(items)
+    cards = "".join(
+        f"""
+        <tr>
+          <td style="padding:0 28px 18px;">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #dbe5ee;border-radius:10px;background:#ffffff;">
+              <tr><td style="padding:20px 20px 8px;font-family:Arial,sans-serif;color:#172b4d;font-size:18px;font-weight:700;line-height:26px;">{escape(item['name'])}</td></tr>
+              <tr><td style="padding:0 20px 8px;font-family:Arial,sans-serif;color:#52657a;font-size:14px;line-height:21px;"><strong style="color:#172b4d;">Category:</strong> {escape(item['category'])}&nbsp;&nbsp; <strong style="color:#172b4d;">Due:</strong> {escape(item['due_date'])}</td></tr>
+              <tr><td style="padding:6px 20px 20px;"><a href="{escape(item['link'], quote=True)}" style="display:inline-block;background:#0f766e;border-radius:6px;color:#ffffff;font-family:Arial,sans-serif;font-size:14px;font-weight:700;line-height:18px;padding:11px 16px;text-decoration:none;">View opportunity</a></td></tr>
+            </table>
+          </td>
+        </tr>"""
+        for item in items
+    )
+    label = "opportunity" if count == 1 else "opportunities"
+    return f"""<!doctype html>
+<html lang="en"><body style="margin:0;padding:0;background:#f4f7fb;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f4f7fb;"><tr><td align="center" style="padding:32px 12px;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:640px;background:#ffffff;border-radius:14px;overflow:hidden;">
+      <tr><td style="padding:28px;background:#102b46;font-family:Arial,sans-serif;color:#ffffff;"><div style="font-size:12px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#71dac2;">Proposal Monitor</div><div style="padding-top:9px;font-size:26px;font-weight:700;line-height:34px;">New myGov {label}</div><div style="padding-top:8px;font-size:15px;line-height:22px;color:#c9d7e4;">{count} new keyword match{'es' if count != 1 else ''} ready for review.</div></td></tr>
+      <tr><td style="padding-top:24px;">{cards}</td></tr>
+      <tr><td style="padding:20px 28px 28px;font-family:Arial,sans-serif;color:#6b7b8f;font-size:12px;line-height:18px;">This automated alert was sent by Proposal Monitor. Review each opportunity and its requirements before taking action.</td></tr>
+    </table>
+  </td></tr></table>
+</body></html>"""
+
+
 def email_alert(items: list[dict[str, str]]) -> bool:
     required = [os.getenv("ALERT_EMAIL_TO"), os.getenv("SMTP_HOST"), os.getenv("SMTP_USERNAME"), os.getenv("SMTP_PASSWORD")]
     if not all(required):
@@ -283,7 +425,8 @@ def email_alert(items: list[dict[str, str]]) -> bool:
     message["Subject"] = f"myGov proposal alert: {len(items)} new match(es)"
     message["From"] = os.getenv("SMTP_FROM") or os.getenv("SMTP_USERNAME")
     message["To"] = os.environ["ALERT_EMAIL_TO"]
-    message.set_content("New myGov proposals matching your keywords:\n\n" + "\n\n".join(f"{item['name']}\nCategory: {item['category']}\nDue: {item['due_date']}\n{item['link']}" for item in items))
+    message.set_content(proposal_alert_text(items))
+    message.add_alternative(proposal_alert_html(items), subtype="html")
     with smtplib.SMTP(os.environ["SMTP_HOST"], int(os.getenv("SMTP_PORT", "587"))) as smtp:
         smtp.starttls()
         smtp.login(os.environ["SMTP_USERNAME"], os.environ["SMTP_PASSWORD"])
@@ -319,6 +462,7 @@ def main() -> int:
     proposals = list({item["link"]: item for item in found}.values())
     workflow_state = sync_workflow(proposals)
     export(proposals, args.output, workflow_state, config.get("sources"))
+    write_dashboard_results(proposals, workflow_state)
     print(f"Saved {len(proposals)} matching proposal(s) to {args.output}")
     if args.mygov_alert:
         state = OUTPUT / "mygov_seen.json"

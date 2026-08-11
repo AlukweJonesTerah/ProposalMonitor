@@ -356,3 +356,8 @@ approver; drafts in `content/inbox` cannot be posted.
 - If a source's page turns out to be JavaScript-rendered (empty results
   despite the URL being correct), `requests`/`BeautifulSoup` won't see its
   content — that's the point to reach for a rendering-aware fetcher instead.
+- Public websites are fetched respectfully: the monitor honours available
+  `robots.txt` rules, waits at least 1.5 seconds between requests to the same
+  site, and makes limited retries for temporary failures such as rate limits.
+  It does not attempt to bypass CAPTCHAs, login pages, or bot protections.
+  Adjust the interval with `SCRAPER_REQUEST_INTERVAL_SECONDS` in `.env`.
