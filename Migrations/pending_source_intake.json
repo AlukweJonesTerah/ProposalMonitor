@@ -2,21 +2,37 @@
   {
     "url": "https://example.gov/tenders",
     "submitted_at": "2026-08-10T09:15:56.399Z",
-    "status": "pending_review"
+    "status": "rejected",
+    "reviewed_at": "2026-08-11T18:22:28.315Z"
   },
   {
     "url": "https://example.org/funding",
     "submitted_at": "2026-08-10T09:15:56.399Z",
-    "status": "pending_review"
+    "status": "rejected",
+    "reviewed_at": "2026-08-11T18:22:31.153Z"
   },
   {
     "url": "https://www.climatechange.ai/papers/neurips2024/98",
     "submitted_at": "2026-08-10T10:04:59.643Z",
-    "status": "pending_review"
+    "status": "rejected",
+    "reviewed_at": "2026-08-11T18:22:37.608Z"
   },
   {
     "url": "https://www.climatechange.ai/papers/neurips2024/98https://www.climatechange.ai/papers/neurips2024/98",
     "submitted_at": "2026-08-10T10:11:01.745Z",
-    "status": "pending_review"
+    "status": "rejected",
+    "reviewed_at": "2026-08-11T18:22:39.306Z"
+  },
+  {
+    "url": "https://www.bluedot-network.org/certification",
+    "submitted_at": "2026-08-11T16:20:04.680Z",
+    "status": "approved",
+    "reviewed_at": "2026-08-11T18:22:43.172Z"
+  },
+  {
+    "url": "https://www.climatechange.ai/",
+    "submitted_at": "2026-08-11T18:24:37.612Z",
+    "status": "approved",
+    "reviewed_at": "2026-08-11T18:24:48.029Z"
   }
 ]

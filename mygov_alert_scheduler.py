@@ -1,4 +1,4 @@
-"""Run the myGov proposal alert once every Tuesday and Thursday in Nairobi time."""
+"""Send a priority proposal briefing once every Tuesday and Thursday in Nairobi time."""
 
 from __future__ import annotations
 
@@ -45,7 +45,7 @@ def save_last_run(run_date: str) -> None:
 def smtp_ready() -> bool:
     missing = [name for name in REQUIRED_SMTP_SETTINGS if not os.getenv(name)]
     if missing:
-        print(f"myGov alert waiting for SMTP configuration: {', '.join(missing)}")
+        print(f"Proposal alert waiting for SMTP configuration: {', '.join(missing)}")
         return False
     return True
 
@@ -75,20 +75,20 @@ def send_test_email() -> int:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Run or test the myGov alert scheduler.")
+    parser = argparse.ArgumentParser(description="Run or test the Tuesday/Thursday proposal alert scheduler.")
     parser.add_argument("--test-email", action="store_true", help="Send one SMTP test email, then exit.")
     args = parser.parse_args()
     load_dotenv(ROOT / ".env")
     if args.test_email:
         return send_test_email()
-    print(f"myGov alert scheduler started; Tuesdays and Thursdays at {alert_time().strftime('%H:%M')} Africa/Nairobi.")
+    print(f"Priority alert scheduler started; Tuesdays and Thursdays at {alert_time().strftime('%H:%M')} Africa/Nairobi.")
     while True:
         now = datetime.now(TIMEZONE)
         if is_due(now, load_last_run()) and smtp_ready():
-            result = subprocess.run([sys.executable, "proposal_hybrid_monitor.py", "--mygov-alert"], cwd=ROOT, check=False)
+            result = subprocess.run([sys.executable, "proposal_hybrid_monitor.py", "--scheduled-alert"], cwd=ROOT, check=False)
             if result.returncode == 0:
                 save_last_run(now.date().isoformat())
-                print(f"myGov alert check completed for {now.date().isoformat()}.")
+                print(f"Priority alert check completed for {now.date().isoformat()}.")
             else:
                 print(f"myGov alert check failed (exit code {result.returncode}); it will retry.")
         time.sleep(60)

@@ -1,11 +1,35 @@
 {
-  "keywords": ["analytics", "data science", "training", "grant", "grant application", "certification", "certification offer", "paper proposal", "call for papers"],
+  "keywords": [
+    "analysis",
+    "analytics",
+    "analytical",
+    "data analysis",
+    "data analytics",
+    "data science",
+    "data scientist",
+    "data-scientist",
+    "machine learning",
+    "artificial intelligence",
+    "training",
+    "ICT training",
+    "grant application",
+    "funding opportunity",
+    "certification offer",
+    "certification application",
+    "apply for certification",
+    "paper proposal",
+    "call for papers"
+  ],
   "sources": [
     {
       "name": "myGov Kenya",
       "source_type": "mygov",
-      "start_urls": ["https://gaa.go.ke/all-tenders"],
-      "allowed_domains": ["gaa.go.ke"],
+      "start_urls": [
+        "https://gaa.go.ke/all-tenders"
+      ],
+      "allowed_domains": [
+        "gaa.go.ke"
+      ],
       "max_links": 80,
       "active": true,
       "check_frequency": "Tuesday and Thursday"
@@ -13,8 +37,12 @@
     {
       "name": "Public Procurement Information Portal",
       "source_type": "national_procurement_portal",
-      "start_urls": ["https://tenders.go.ke/tenders"],
-      "allowed_domains": ["tenders.go.ke"],
+      "start_urls": [
+        "https://tenders.go.ke/tenders"
+      ],
+      "allowed_domains": [
+        "tenders.go.ke"
+      ],
       "max_links": 80,
       "active": false,
       "check_frequency": "Weekdays",
@@ -24,8 +52,12 @@
     {
       "name": "Kenya Revenue Authority",
       "source_type": "government_agency",
-      "start_urls": ["https://www.kra.go.ke/tenders"],
-      "allowed_domains": ["kra.go.ke"],
+      "start_urls": [
+        "https://www.kra.go.ke/tenders"
+      ],
+      "allowed_domains": [
+        "kra.go.ke"
+      ],
       "max_links": 80,
       "active": true,
       "check_frequency": "Weekdays"
@@ -33,8 +65,12 @@
     {
       "name": "National Environment Management Authority",
       "source_type": "government_agency",
-      "start_urls": ["https://nema.go.ke/tenders/"],
-      "allowed_domains": ["nema.go.ke"],
+      "start_urls": [
+        "https://nema.go.ke/tenders/"
+      ],
+      "allowed_domains": [
+        "nema.go.ke"
+      ],
       "max_links": 80,
       "active": true,
       "check_frequency": "Weekdays"
@@ -42,11 +78,41 @@
     {
       "name": "Public Procurement Regulatory Authority",
       "source_type": "government_agency",
-      "start_urls": ["https://ppra.go.ke/category/tenders/"],
-      "allowed_domains": ["ppra.go.ke"],
+      "start_urls": [
+        "https://ppra.go.ke/category/tenders/"
+      ],
+      "allowed_domains": [
+        "ppra.go.ke"
+      ],
       "max_links": 40,
       "active": true,
       "check_frequency": "Weekdays"
+    },
+    {
+      "name": "bluedot-network.org",
+      "source_type": "approved_submission",
+      "start_urls": [
+        "https://www.bluedot-network.org/certification"
+      ],
+      "allowed_domains": [
+        "bluedot-network.org"
+      ],
+      "max_links": 40,
+      "active": true,
+      "check_frequency": "Every monitor run"
+    },
+    {
+      "name": "climatechange.ai",
+      "source_type": "approved_submission",
+      "start_urls": [
+        "https://www.climatechange.ai/"
+      ],
+      "allowed_domains": [
+        "climatechange.ai"
+      ],
+      "max_links": 40,
+      "active": true,
+      "check_frequency": "Every monitor run"
     }
   ]
 }

@@ -36,6 +36,7 @@ OUTPUT = ROOT / "proposal_output"
 WORKFLOW_STATE_FILE = OUTPUT / "proposal_workflow_state.json"
 PENDING_SOURCE_FILE = ROOT / "Migrations" / "pending_source_intake.json"
 DISCOVERY_TERMS = ("tender", "proposal", "rfp", "consultancy", "procurement", "grant", "funding", "certification", "certification offer", "paper proposal", "call for papers")
+ICT_TERMS = ("ict", "information technology", "technology", "digital", "software", "computer", "data", "analytics", "artificial intelligence", "machine learning", "cyber", "cloud", "network", "blockchain", "automation", "systems development")
 REQUEST_INTERVAL_SECONDS = 1.5
 MAX_FETCH_ATTEMPTS = 3
 _robots_cache: dict[str, RobotFileParser | None] = {}
@@ -54,8 +55,23 @@ DATE_PATTERNS = (
 )
 
 
+def atomic_json_write(path: Path, payload: object) -> None:
+    """Replace JSON snapshots atomically so readers never see a partial file."""
+    path.parent.mkdir(exist_ok=True)
+    temporary = path.with_suffix(f"{path.suffix}.tmp")
+    temporary.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    temporary.replace(path)
+
+
 def clean(value: str) -> str:
     return re.sub(r"\s+", " ", value).strip()
+
+
+def preferred_title(label: str, extracted_text: str) -> str:
+    """Replace generic index-link labels with useful text extracted from the document."""
+    if label and label.casefold() not in {"download", "loading...", "view", "read more", "click here"}:
+        return label
+    return clean(extracted_text)[:160] or label or "Untitled proposal"
 
 
 def canonical_url(url: str) -> str:
@@ -88,17 +104,23 @@ def category(matches: list[str]) -> str:
     terms = " ".join(matches).lower()
     if "paper proposal" in terms or "call for papers" in terms:
         return "Paper proposal"
-    if "grant" in terms:
+    if "grant application" in terms or "funding opportunity" in terms:
         return "Grant"
-    if "certification" in terms:
+    if "certification offer" in terms or "certification application" in terms or "apply for certification" in terms:
         return "Certification"
-    if "data science" in terms:
+    if any(term in terms for term in ("data science", "data scientist", "data-scientist", "machine learning", "artificial intelligence")):
         return "Data science"
-    if "analytics" in terms:
+    if any(term in terms for term in ("analytics", "analysis", "analytical", "data analytics", "data analysis")):
         return "Analytics"
     if "training" in terms:
         return "Training"
     return "Other"
+
+
+def is_ict_related(*values: str) -> bool:
+    """Require an ICT signal before accepting broad opportunity types."""
+    text = " ".join(str(value or "") for value in values).casefold()
+    return any(term in text for term in ICT_TERMS)
 
 
 def _origin(url: str) -> str:
@@ -202,14 +224,14 @@ def collect(session: requests.Session, source: dict, keywords: list[str]) -> lis
             continue
         if kind == "pdf":
             text = clean(body)
-            title = label or text[:160]
+            title = preferred_title(label, text)
         else:
             soup = BeautifulSoup(body, "html.parser")
             title_tag = soup.find("h1") or soup.find("title")
-            title = clean(title_tag.get_text(" ", strip=True) if title_tag else label)
             text = clean(soup.get_text(" ", strip=True))
+            title = preferred_title(clean(title_tag.get_text(" ", strip=True) if title_tag else label), text)
         matches = [word for word in keywords if word.lower() in f"{title} {text}".lower()]
-        if matches:
+        if matches and is_ict_related(title, text):
             results.append({"name": title or label or "Untitled proposal", "category": category(matches), "link": link, "due_date": due_date(text), "source": source["name"], "keywords": ", ".join(matches)})
     print(f"Checked {source['name']}: {len(candidates)} candidate link(s), {len(results)} matching proposal(s).")
     return results
@@ -265,6 +287,42 @@ def review_due_date(item: dict[str, str], today: date) -> str:
     return (today + timedelta(days=2)).isoformat()
 
 
+def is_expired(item: dict[str, str], today: date | None = None) -> bool:
+    if item.get("due_date") in (None, "", "Not stated"):
+        return False
+    return datetime.fromisoformat(item["due_date"]).date() < (today or date.today())
+
+
+def merge_with_dashboard_snapshot(fresh: list[dict[str, str]]) -> list[dict[str, str]]:
+    """Keep previously found, still-active opportunities between monitor runs.
+
+    A fresh record with the same official link replaces the old copy; expired
+    records are removed. This prevents a temporary source-page change from
+    making valid earlier proposals disappear from the dashboard or workbook.
+    """
+    snapshot = OUTPUT / "proposals.json"
+    existing: list[dict[str, str]] = []
+    if snapshot.exists():
+        try:
+            existing = json.loads(snapshot.read_text(encoding="utf-8")).get("proposals", [])
+        except (json.JSONDecodeError, OSError):
+            existing = []
+    merged = {item.get("link"): item for item in [*existing, *fresh] if item.get("link")}
+    expired = [item for item in merged.values() if is_expired(item)]
+    if expired:
+        archive_file = OUTPUT / "previous_opportunities.json"
+        try:
+            archived = json.loads(archive_file.read_text(encoding="utf-8")).get("proposals", []) if archive_file.exists() else []
+        except (json.JSONDecodeError, OSError):
+            archived = []
+        now = datetime.now(timezone.utc).isoformat()
+        archive = {item.get("link"): item for item in archived if item.get("link")}
+        for item in expired:
+            archive[item["link"]] = {**item, "archived_at": now}
+        atomic_json_write(archive_file, {"generated_at": now, "count": len(archive), "proposals": list(archive.values())})
+    return [item for item in merged.values() if not is_expired(item)]
+
+
 def sync_workflow(proposals: list[dict[str, str]]) -> dict[str, dict[str, str]]:
     """Create persistent review tasks for newly discovered proposals."""
     state = load_workflow_state()
@@ -280,8 +338,7 @@ def sync_workflow(proposals: list[dict[str, str]]) -> dict[str, dict[str, str]]:
         task["title"] = item["name"]
         task["link"] = item["link"]
         task["last_seen"] = today.isoformat()
-    OUTPUT.mkdir(exist_ok=True)
-    WORKFLOW_STATE_FILE.write_text(json.dumps(state, indent=2), encoding="utf-8")
+    atomic_json_write(WORKFLOW_STATE_FILE, state)
     return state
 
 
@@ -302,7 +359,7 @@ def source_register_rows(sources: list[dict] | None) -> list[list[str]]:
     return rows
 
 
-def export(proposals: list[dict[str, str]], output: Path, workflow_state: dict[str, dict[str, str]], sources: list[dict] | None = None) -> None:
+def export(proposals: list[dict[str, str]], output: Path, workflow_state: dict[str, dict[str, str]], sources: list[dict] | None = None, keywords: list[str] | None = None) -> None:
     book = Workbook()
     proposals_sheet = book.active
     proposals_sheet.title = "Proposals"
@@ -333,7 +390,7 @@ def export(proposals: list[dict[str, str]], output: Path, workflow_state: dict[s
     for cell in book["Workplan"]["C"][1:] + book["Workplan"]["D"][1:]:
         cell.number_format = "yyyy-mm-dd"
     add_sheet(book, "Website Register", ["Source name", "Website URL", "Type", "Priority", "Check frequency", "Active", "Notes"], source_register_rows(sources))
-    add_sheet(book, "Keywords", ["Keyword", "Category", "Include / Exclude", "Notes"], [["analytics", "Analytics", "Include", ""], ["data science", "Data science", "Include", ""], ["training", "Training", "Include", ""]])
+    add_sheet(book, "Keywords", ["Keyword", "Category", "Include / Exclude", "Notes"], [[keyword, category([keyword]), "Include", ""] for keyword in (keywords or [])])
     add_sheet(book, "Content Calendar", ["Content item", "Platform", "Owner", "Approval status", "Posting date", "Published", "Notes"], [])
     queue_rows = []
     for item in proposals:
@@ -368,17 +425,16 @@ def write_dashboard_results(proposals: list[dict[str, str]], workflow_state: dic
             "owner": task.get("owner", "Project team"),
             "review_due_date": task.get("review_due_date", ""),
         })
-    OUTPUT.mkdir(exist_ok=True)
-    (OUTPUT / "proposals.json").write_text(json.dumps({
+    atomic_json_write(OUTPUT / "proposals.json", {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "count": len(rows),
         "proposals": rows,
-    }, indent=2), encoding="utf-8")
+    })
 
 
 def proposal_alert_text(items: list[dict[str, str]]) -> str:
-    """Build the plain-text fallback for a myGov proposal alert."""
-    return "New myGov proposals matching your keywords:\n\n" + "\n\n".join(
+    """Build the plain-text fallback for a scheduled priority alert."""
+    return "High- and medium-priority proposals ready for review:\n\n" + "\n\n".join(
         f"{item['name']}\n"
         f"Category: {item['category']}\n"
         f"Due: {item['due_date']}\n"
@@ -408,7 +464,7 @@ def proposal_alert_html(items: list[dict[str, str]]) -> str:
 <html lang="en"><body style="margin:0;padding:0;background:#f4f7fb;">
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f4f7fb;"><tr><td align="center" style="padding:32px 12px;">
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:640px;background:#ffffff;border-radius:14px;overflow:hidden;">
-      <tr><td style="padding:28px;background:#102b46;font-family:Arial,sans-serif;color:#ffffff;"><div style="font-size:12px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#71dac2;">Proposal Monitor</div><div style="padding-top:9px;font-size:26px;font-weight:700;line-height:34px;">New myGov {label}</div><div style="padding-top:8px;font-size:15px;line-height:22px;color:#c9d7e4;">{count} new keyword match{'es' if count != 1 else ''} ready for review.</div></td></tr>
+      <tr><td style="padding:28px;background:#102b46;font-family:Arial,sans-serif;color:#ffffff;"><div style="font-size:12px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#71dac2;">Proposal Monitor</div><div style="padding-top:9px;font-size:26px;font-weight:700;line-height:34px;">Priority {label} for review</div><div style="padding-top:8px;font-size:15px;line-height:22px;color:#c9d7e4;">{count} high- or medium-priority match{'es' if count != 1 else ''} in this scheduled briefing.</div></td></tr>
       <tr><td style="padding-top:24px;">{cards}</td></tr>
       <tr><td style="padding:20px 28px 28px;font-family:Arial,sans-serif;color:#6b7b8f;font-size:12px;line-height:18px;">This automated alert was sent by Proposal Monitor. Review each opportunity and its requirements before taking action.</td></tr>
     </table>
@@ -422,7 +478,7 @@ def email_alert(items: list[dict[str, str]]) -> bool:
         print("No email sent: set ALERT_EMAIL_TO and SMTP_* in .env.")
         return False
     message = EmailMessage()
-    message["Subject"] = f"myGov proposal alert: {len(items)} new match(es)"
+    message["Subject"] = f"Proposal Monitor priority briefing: {len(items)} opportunity(s)"
     message["From"] = os.getenv("SMTP_FROM") or os.getenv("SMTP_USERNAME")
     message["To"] = os.environ["ALERT_EMAIL_TO"]
     message.set_content(proposal_alert_text(items))
@@ -460,10 +516,12 @@ def main() -> int:
     with requests.Session() as session:
         found = [item for source in sources for item in collect(session, source, config["keywords"])]
     proposals = list({item["link"]: item for item in found}.values())
+    expired = [item for item in proposals if is_expired(item)]
+    proposals = merge_with_dashboard_snapshot(proposals)
     workflow_state = sync_workflow(proposals)
-    export(proposals, args.output, workflow_state, config.get("sources"))
+    export(proposals, args.output, workflow_state, config.get("sources"), config.get("keywords"))
     write_dashboard_results(proposals, workflow_state)
-    print(f"Saved {len(proposals)} matching proposal(s) to {args.output}")
+    print(f"Saved {len(proposals)} active matching proposal(s) to {args.output}; excluded {len(expired)} expired item(s).")
     if args.mygov_alert:
         state = OUTPUT / "mygov_seen.json"
         seen = set(json.loads(state.read_text()) if state.exists() else [])

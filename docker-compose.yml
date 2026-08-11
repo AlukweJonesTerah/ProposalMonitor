@@ -34,7 +34,13 @@ services:
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash}
       GEMINI_BATCH_SIZE: ${GEMINI_BATCH_SIZE:-10}
       AI_CLASSIFICATION_LIMIT: ${AI_CLASSIFICATION_LIMIT:-30}
-    command: python proposal_hybrid_monitor.py
+      FIRECRAWL_API_KEY: ${FIRECRAWL_API_KEY}
+      PROPOSAL_MONITOR_INTERVAL_SECONDS: ${PROPOSAL_MONITOR_INTERVAL_SECONDS:-21600}
+      ENABLE_PUBLIC_WEB_DISCOVERY: ${ENABLE_PUBLIC_WEB_DISCOVERY:-false}
+      PUBLIC_WEB_DISCOVERY_LIMIT: ${PUBLIC_WEB_DISCOVERY_LIMIT:-5}
+      PUBLIC_WEB_DISCOVERY_REGION: ${PUBLIC_WEB_DISCOVERY_REGION:-Kenya}
+    command: python proposal_scheduler.py
+    restart: unless-stopped
 
   python-dev:
     profiles: ["dev"]
