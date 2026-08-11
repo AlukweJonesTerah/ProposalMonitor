@@ -5,7 +5,7 @@ This project now includes a simple Docker-based setup for running both a Python 
 ## What is included
 
 - A Next.js app served on port 3000
-- A Python service running [proposal_monitor_runtime.py](proposal_monitor_runtime.py)
+- A Python service running [proposal_hybrid_monitor.py](proposal_hybrid_monitor.py)
 - A dedicated Python development container for iterative Python work
 - Docker Compose orchestration for the web and Python services
 
@@ -25,6 +25,10 @@ This will start:
 
 - the web app at http://localhost:3001
 - the production Python container for the script
+
+The Next.js process listens on port `3000` inside Docker, but Docker exposes it
+on port `3001` on your computer. Always open `http://localhost:3001`, not
+`http://localhost:3000`.
 
 ## Useful commands
 
@@ -58,11 +62,14 @@ Rebuild the Python development service:
 docker compose build python-dev
 ```
 
-Run only the Python development container:
+Run the optional Python development container:
 
 ```bash
-docker compose up python-dev
+docker compose --profile dev up python-dev
 ```
+
+`python-dev` is excluded from the normal `docker compose up` command so it
+cannot run a second monitor job and duplicate Gemini classification usage.
 
 ## Environment variables
 

@@ -37,6 +37,7 @@ services:
     command: python proposal_hybrid_monitor.py
 
   python-dev:
+    profiles: ["dev"]
     build:
       context: .
       dockerfile: Dockerfile.python.dev

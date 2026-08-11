@@ -24,7 +24,7 @@
     "review_due_date": "2026-08-08",
     "title": "Capital Markets Authority Tender Notice for Supply, Implementation, Training and Maintenance of a Virtual Assets Blockchain Analytics System.pdf",
     "link": "https://gaa.go.ke/sites/default/files/2026-07/Capital%20Markets%20Authority%20Tender%20Notice%20for%20Supply%2C%20Implementation%2C%20Training%20and%20Maintenance%20of%20a%20Virtual%20Assets%20Blockchain%20Analytics%20System.pdf",
-    "last_seen": "2026-08-08"
+    "last_seen": "2026-08-10"
   },
   "6b3a427e52bb058c": {
     "status": "Review required",
@@ -33,7 +33,7 @@
     "review_due_date": "2026-08-10",
     "title": "Download",
     "link": "https://nema.go.ke/wp-content/uploads/2026/03/TENDER-NO-NEMA-T-04-2025-2026-Tender-Supply-DeliveryInstallation-and-Commissioning-of-Laboratory-Equipment.pdf",
-    "last_seen": "2026-08-08"
+    "last_seen": "2026-08-10"
   },
   "05ecf7d703f4ee05": {
     "status": "Review required",
@@ -42,7 +42,7 @@
     "review_due_date": "2026-08-08",
     "title": "Download",
     "link": "https://nema.go.ke/wp-content/uploads/2026/03/TENDER-NO-NEMA-T-05-2025-2026-SUPPLY-DELIVERY-AND-INSTALLATION-OF-SMART-TV-SCREENS.pdf",
-    "last_seen": "2026-08-08"
+    "last_seen": "2026-08-10"
   },
   "b9d78cdc0f20072d": {
     "status": "Review required",
@@ -51,7 +51,7 @@
     "review_due_date": "2026-08-08",
     "title": "Download",
     "link": "https://nema.go.ke/wp-content/uploads/2025/12/Tender-no.-NEMAEOI012025-2026_EOI_International-Tender.pdf",
-    "last_seen": "2026-08-08"
+    "last_seen": "2026-08-10"
   },
   "fd4720ea6610ff8d": {
     "status": "Review required",
@@ -60,7 +60,7 @@
     "review_due_date": "2026-08-10",
     "title": "loading...",
     "link": "https://ppra.go.ke/standard-tender-documents",
-    "last_seen": "2026-08-08"
+    "last_seen": "2026-08-10"
   },
   "60f0a7a816434f8a": {
     "status": "Review required",
@@ -168,6 +168,42 @@
     "review_due_date": "2026-08-10",
     "title": "Kenya Reinsurance Corporation - Supply and Installation of Agentic AI Automation System",
     "link": "https://gaa.go.ke/sites/default/files/2026-07/Kenya%20Reinsurance%20Corporation%20Limited%20Invitation%20to%20Tender.pdf",
+    "last_seen": "2026-08-10"
+  },
+  "cdc7930331d15fe0": {
+    "status": "Review required",
+    "owner": "Project team",
+    "first_seen": "2026-08-10",
+    "review_due_date": "2026-08-17",
+    "title": "Open University of Kenya Registration and Pre-qualification of Suppliers",
+    "link": "https://gaa.go.ke/sites/default/files/2026-08/%20Open%20University%20of%20Kenya%20Tender%20Notice.pdf",
+    "last_seen": "2026-08-10"
+  },
+  "d22d9b1058b646c0": {
+    "status": "Review required",
+    "owner": "Project team",
+    "first_seen": "2026-08-10",
+    "review_due_date": "2026-08-10",
+    "title": "NEMA EOI for Pre-Verification and Certification of Imported Equipment, EPRF Collection, and Waste Management System Design",
+    "link": "https://nema.go.ke/wp-content/uploads/2025/12/Tender-no.-NEMAEOI012025-2026_EOI_International-Tender.pdf",
+    "last_seen": "2026-08-10"
+  },
+  "c337e5389f24fa88": {
+    "status": "Review required",
+    "owner": "Project team",
+    "first_seen": "2026-08-10",
+    "review_due_date": "2026-08-17",
+    "title": "Open University of Kenya Supplier Registration and Prequalification 2026-2028",
+    "link": "https://gaa.go.ke/sites/default/files/2026-08/%20Open%20University%20of%20Kenya%20Tender%20Notice.pdf",
+    "last_seen": "2026-08-10"
+  },
+  "787445694bbb53ef": {
+    "status": "Review required",
+    "owner": "Project team",
+    "first_seen": "2026-08-10",
+    "review_due_date": "2026-08-10",
+    "title": "NEMA Request for Expression of Interest for Pre-Verification, Certification, Fee Collection and Waste Management System Design",
+    "link": "https://nema.go.ke/wp-content/uploads/2025/12/Tender-no.-NEMAEOI012025-2026_EOI_International-Tender.pdf",
     "last_seen": "2026-08-10"
   }
 }
