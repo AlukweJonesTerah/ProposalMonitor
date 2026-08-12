@@ -116,3 +116,92 @@ header nav { justify-content: center; padding-left: 20px; padding-right: 20px; }
 nav a:nth-child(4)::before { background: transparent; border: 2px solid currentColor; border-radius: 50%; box-sizing: border-box; clip-path: none; transform: none; }
 nav a:nth-child(5)::before { clip-path: polygon(38% 0,62% 0,62% 38%,100% 38%,100% 62%,62% 62%,62% 100%,38% 100%,38% 62%,0 62%,0 38%,38% 38%); transform: none; }
 .sources::before { clip-path: polygon(50% 0,100% 50%,50% 100%,0 50%); }
+
+/* Phone layout: keep every destination and the dashboard status reachable.
+   The navigation scrolls horizontally instead of disappearing behind a menu. */
+@media (max-width: 640px) {
+  body { font-size: 15px; }
+  .mast { height: 72px; padding: 10px 14px; }
+  .logo { gap: 7px; }
+  .logo span { height: 40px; width: 40px; }
+  .logo b::after { font-size: 22px; }
+  .logo small, .mast .sources, .mast .search { display: none; }
+
+  header nav {
+    -webkit-overflow-scrolling: touch;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    gap: 4px;
+    overflow-x: auto;
+    padding: 8px 12px;
+    scrollbar-width: none;
+  }
+  header nav::-webkit-scrollbar { display: none; }
+  header nav a,
+  header nav a:not(.active) {
+    align-items: center;
+    display: inline-flex;
+    flex: 0 0 auto;
+    font-size: 13px;
+    min-height: 44px;
+    padding: 10px 12px;
+  }
+  header nav .active { background: #edf4ff; color: #1a4d7a !important; }
+  nav a::before { height: 14px; width: 14px; }
+
+  .keywordStrip {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding: 8px 12px;
+    white-space: nowrap;
+  }
+  .filterBar { gap: 9px; padding: 12px; }
+  .filterBar label { gap: 6px; }
+  .filterBar input, .filterBar select,
+  .sourceAdd input, .sourceFilters input, .sourceFilters select,
+  .historyFilters input, .historyFilters select,
+  .intake input, .intake textarea { font-size: 16px; }
+  .filterBar button { min-height: 44px; width: 100%; }
+  .filterBar > span { padding: 0; text-align: center; }
+
+  .wrap { gap: 16px; padding: 12px; }
+  .lead { border-radius: 12px; min-height: 0; }
+  .leadText, .covered { padding: 20px; }
+  .leadText p { align-items: flex-start; flex-wrap: wrap; line-height: 1.45; white-space: normal; }
+  .leadText h1 { font-size: 28px; letter-spacing: -.35px; margin: 17px 0 13px; }
+  .leadText > a, .covered .proposalRedirect { min-height: 44px; margin-top: 14px; padding: 12px 14px; }
+  .covered > b { font-size: 25px; margin: 18px 0 14px; }
+  .lower { gap: 16px; margin-top: 16px; }
+  .other h2 { margin: 4px 0 12px; }
+  .mini { margin: 10px 0; padding: 15px; }
+  .ops article, .rail { border-radius: 12px; margin-bottom: 16px; padding: 18px; }
+  .ops article > div { gap: 9px; margin-top: 17px; }
+  .ops article > div b { font-size: 24px; }
+  .ops button { float: none; margin-top: 14px; min-height: 44px; width: 100%; }
+
+  .main > .actionRow, .actionRow { gap: 16px; margin-top: 16px; width: 100%; }
+  .actionRow .intake, .intake { border-radius: 12px; min-height: 0; padding: 18px; }
+  .intake h2 { font-size: 21px; }
+  .intake form { margin-top: 16px; }
+  .intake textarea { min-height: 108px; }
+  .intake button { min-height: 44px; width: 100%; }
+  .actionRow .intake p { min-height: 0; }
+
+  aside { display: block; }
+  aside .rail { padding: 18px; }
+  .trending a { padding: 13px 0; }
+
+  .detailPage, .historyPage { margin-top: 24px; padding: 0 12px; }
+  .detailCard, .categoryCard, .historyList article, .historyEmpty { border-radius: 12px; padding: 20px; }
+  .detailCard h1, .historyPage > h1 { font-size: 29px; }
+  .detailCard h2, .categoryCard h2 { margin-top: 22px; }
+  .sourceButton { min-height: 44px; padding: 12px 14px; }
+  .sourceAdd, .sourceFilters, .historyFilters { align-items: stretch; flex-direction: column; }
+  .sourceAdd button, .sourceFilters button, .historyFilters button { min-height: 44px; width: 100%; }
+  .sourceFilters input, .sourceFilters select, .historyFilters input, .historyFilters select { min-width: 0; width: 100%; }
+  .historyFilters span { padding-bottom: 0; }
+  .reviewActions { align-items: stretch; flex-wrap: wrap; }
+  .reviewActions a, .reviewActions button { flex: 1 1 140px; min-height: 44px; text-align: center; }
+  .pagination { justify-content: space-between; }
+}
