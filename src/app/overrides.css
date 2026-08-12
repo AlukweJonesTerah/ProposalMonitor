@@ -62,7 +62,7 @@ nav a:hover, nav a:focus-visible, .sources:hover, .sources:focus-visible { backg
 .ops button { transition: background-color .18s ease, box-shadow .18s ease, transform .18s ease; }.ops button:hover:not(:disabled),.ops button:focus-visible { background: #0d416e; box-shadow: 0 5px 13px rgba(26,87,140,.24); outline: none; transform: translateY(-1px); }
 .historyPage { margin: 48px auto; max-width: 1040px; padding: 0 24px; }.historyPage > h1 { font: 700 38px Georgia, serif; margin: 18px 0 8px; }.historyPage > p { color: #64758b; }.historyList { display: grid; gap: 14px; margin-top: 28px; }.historyList article,.historyEmpty { background: #fff; border: 1px solid #dce5ee; border-radius: 13px; padding: 22px; }.historyList label { color: #8b9ab3; font-size: 11px; text-transform: uppercase; }.historyList h2 { font: 700 20px Georgia, serif; margin: 9px 0; }.historyList p { color: #637893; margin: 0 0 13px; }.historyList a { color: #1a578c; font-weight: 700; text-decoration: none; }.historyList a:hover { text-decoration: underline; }
 .reviewActions { align-items: center; display: flex; gap: 10px; }.reviewActions a,.reviewActions button { margin: 0; padding: 9px 12px; }.reviewActions button.reject { background: #fff; border: 1px solid #c95b5b; color: #a33; }.reviewNotice { background: #edf8f2; border-radius: 8px; color: #176443; padding: 12px; }
-.sourceSection { margin-top: 34px; }.sourceSection > h2 { font: 700 24px Georgia, serif; margin-bottom: 8px; }.sourceList { display: grid; gap: 12px; }.sourceList article { background: #fff; border: 1px solid #dce5ee; border-radius: 12px; padding: 18px 20px; }.sourceList label { color: #8b9ab3; font-size: 11px; text-transform: uppercase; }.sourceList h3 { font-size: 15px; margin: 7px 0; }.sourceList a { color: #1a578c; font-size: 13px; overflow-wrap: anywhere; }
+.sourceSection { margin-top: 34px; }.sourceSection > h2 { font: 700 24px Georgia, serif; margin-bottom: 8px; }.sourceList { display: grid; gap: 12px; }.sourceList article { background: #fff; border: 1px solid #dce5ee; border-radius: 12px; min-width: 0; padding: 18px 20px; }.sourceList label { color: #8b9ab3; font-size: 11px; text-transform: uppercase; }.sourceList h3 { font-size: 15px; margin: 7px 0; overflow-wrap: anywhere; }.sourceList a { color: #1a578c; font-size: 13px; overflow-wrap: anywhere; }
 .sourceAdd { display: flex; gap: 10px; margin: 14px 0 8px; }.sourceAdd input { border: 1px solid #ccdbe9; border-radius: 8px; flex: 1; font: 14px Arial, sans-serif; padding: 10px 12px; }.sourceAdd button { margin: 0; padding: 10px 14px; }.sourceSection > small { color: #637893; display: block; }
 .sourceFilters { align-items: end; background: #fff; border: 1px solid #dce5ee; border-radius: 12px; display: flex; gap: 14px; margin-top: 30px; padding: 16px; }.sourceFilters label { color: #637893; display: grid; font-size: 11px; font-weight: 700; gap: 5px; text-transform: uppercase; }.sourceFilters input,.sourceFilters select { border: 1px solid #ccdbe9; border-radius: 7px; font: 14px Arial, sans-serif; min-width: 230px; padding: 9px 10px; }.pagination { align-items: center; display: flex; gap: 12px; justify-content: end; margin-top: 12px; }.pagination button { margin: 0; padding: 8px 11px; }.pagination span { color: #637893; font-size: 12px; }
 .historyFilters { align-items: end; background: #fff; border: 1px solid #dce5ee; border-radius: 12px; display: flex; flex-wrap: wrap; gap: 12px; margin: 28px 0; padding: 16px; }.historyFilters label { color: #637893; display: grid; font-size: 11px; font-weight: 700; gap: 5px; text-transform: uppercase; }.historyFilters input,.historyFilters select { border: 1px solid #ccdbe9; border-radius: 7px; font: 13px Arial, sans-serif; min-width: 145px; padding: 9px 10px; }.historyFilters button { margin: 0; padding: 9px 12px; }.historyFilters span { color: #637893; font-size: 12px; padding-bottom: 9px; }
@@ -119,7 +119,7 @@ nav a:nth-child(5)::before { clip-path: polygon(38% 0,62% 0,62% 38%,100% 38%,100
 
 /* Phone layout: keep every destination and the dashboard status reachable.
    The navigation scrolls horizontally instead of disappearing behind a menu. */
-@media (max-width: 640px) {
+@media (max-width: 800px) {
   body { font-size: 15px; }
   .mast { height: 72px; padding: 10px 14px; }
   .logo { gap: 7px; }
@@ -201,7 +201,9 @@ nav a:nth-child(5)::before { clip-path: polygon(38% 0,62% 0,62% 38%,100% 38%,100
   .sourceAdd button, .sourceFilters button, .historyFilters button { min-height: 44px; width: 100%; }
   .sourceFilters input, .sourceFilters select, .historyFilters input, .historyFilters select { min-width: 0; width: 100%; }
   .historyFilters span { padding-bottom: 0; }
-  .reviewActions { align-items: stretch; flex-wrap: wrap; }
-  .reviewActions a, .reviewActions button { flex: 1 1 140px; min-height: 44px; text-align: center; }
+  .sourceList article { overflow: hidden; }
+  .sourceList h3, .sourceList a { max-width: 100%; overflow-wrap: anywhere; word-break: break-word; }
+  .reviewActions { align-items: stretch; display: grid; grid-template-columns: 1fr; gap: 8px; }
+  .reviewActions a, .reviewActions button { box-sizing: border-box; min-height: 44px; min-width: 0; text-align: center; width: 100%; }
   .pagination { justify-content: space-between; }
 }
