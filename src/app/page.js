@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
-const categories = ['Analytics', 'Data science', 'Training', 'Grant', 'Certification', 'Paper proposal', 'Other'];
+const categories = ['Analytics', 'Data science', 'Training', 'Grant', 'Certification', 'Paper proposal', 'Digital Health & Climate Tech', 'Youth, Women & Inclusion', 'Other'];
 const fmt = (value) => value && value !== 'Not stated' ? new Date(`${value}T00:00:00`).toLocaleDateString() : 'Not stated';
 
 export default function Dashboard() {

@@ -102,6 +102,10 @@ def due_date(text: str) -> str:
 
 def category(matches: list[str]) -> str:
     terms = " ".join(matches).lower()
+    if any(term in terms for term in ("digital health africa grant", "ai healthcare africa funding", "telemedicine africa grant", "climate technology africa funding", "smart cities africa grant")):
+        return "Digital Health & Climate Tech"
+    if any(term in terms for term in ("youth employment africa grant", "youth digital skills africa funding", "women in technology africa funding", "women in stem africa grant", "gender inclusion digital africa grant")):
+        return "Youth, Women & Inclusion"
     if "paper proposal" in terms or "call for papers" in terms:
         return "Paper proposal"
     if "grant application" in terms or "funding opportunity" in terms:

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
-const categories = ['Analytics', 'Data science', 'Training', 'Grant', 'Certification', 'Paper proposal', 'Other'];
+const categories = ['Analytics', 'Data science', 'Training', 'Grant', 'Certification', 'Paper proposal', 'Digital Health & Climate Tech', 'Youth, Women & Inclusion', 'Other'];
 
 export default function OpportunityDetail({ params }) {
   const [data, setData] = useState(null);
