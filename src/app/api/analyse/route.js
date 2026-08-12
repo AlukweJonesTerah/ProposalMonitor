@@ -48,6 +48,13 @@ export async function POST(request) {
     const url = await publicUrl((await request.json()).url);
     const controller = new AbortController(); const timer = setTimeout(() => controller.abort(), 30000);
     const page = await fetch(url, { headers: { 'User-Agent': 'ProposalMonitor/1.0', Accept: 'text/html,application/xhtml+xml' }, redirect: 'error', signal: controller.signal }); clearTimeout(timer);
+    if ([401, 403, 429].includes(page.status)) {
+      return Response.json({
+        code: 'AUTOMATED_ACCESS_BLOCKED',
+        error: 'This website blocks automated analysis. Open the official page to review the opportunity, or submit its public tender or application page for recurring monitoring.',
+        url: url.href,
+      }, { status: 422 });
+    }
     if (!page.ok) throw new Error(`The page returned HTTP ${page.status}.`);
     if (!page.headers.get('content-type')?.includes('text/html')) throw new Error('One-off analysis supports HTML pages, not PDFs.');
     const html = await page.text(); const content = pageText(html); if (!content) throw new Error('No readable page content was found.');
@@ -64,6 +71,11 @@ export async function POST(request) {
     const analysis = JSON.parse(raw.replace(/^```json\s*|\s*```$/g, ''));
     await recordAnalysis(url.href, analysis);
     return Response.json({ analysis });
-  } catch (error) { return Response.json({ error: error.message || 'Could not analyse this URL.' }, { status: 400 }); }
+  } catch (error) {
+    if (error?.cause?.code === 'ENOTFOUND' || error?.message?.includes('ENOTFOUND')) {
+      return Response.json({ error: 'This website address could not be reached. Check that the public URL is correct, then try again.' }, { status: 400 });
+    }
+    return Response.json({ error: error.message || 'Could not analyse this URL.' }, { status: 400 });
+  }
   finally { activeAnalyses -= 1; }
 }

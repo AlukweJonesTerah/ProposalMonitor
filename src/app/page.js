@@ -50,7 +50,10 @@ export default function Dashboard() {
     try {
       const response = await fetch('/api/analyse', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: analysisUrl }) });
       const result = await response.json();
-      if (!response.ok) throw new Error(result.error);
+      if (!response.ok) {
+        setAnalysis({ error: result.error, blockedUrl: result.code === 'AUTOMATED_ACCESS_BLOCKED' ? result.url : '' });
+        return;
+      }
       setAnalysis({ ...result.analysis, warning: result.warning });
     } catch (error) { setAnalysis({ error: error.message || 'Could not analyse this URL.' }); }
     finally { setAnalysing(false); }
@@ -90,7 +93,7 @@ export default function Dashboard() {
         </div>
         <div className="actionRow">
           <section className="intake" id="intake"><div><label>RECURRING MONITORING</label><h2>Suggest a proposal website</h2><p>Add a tender, donor, or ministry portal for the team to review. Approved websites are checked in future monitor runs.</p></div><form onSubmit={submitSources}><textarea value={urls} onChange={(event) => setUrls(event.target.value)} placeholder={'https://example.gov/tenders\nhttps://example.org/funding'} required /><button disabled={saving}>{saving ? 'Submitting…' : 'Submit sources'}</button>{notice && <small>{notice}</small>}</form></section>
-          <section className="intake analyzer"><div><label>ONE-OFF ANALYSIS</label><h2>Analyse an opportunity now</h2><p>Paste one public opportunity page for an immediate relevance score, eligibility notes, and deadline. It will not be added to recurring monitoring.</p></div><form onSubmit={analyse}><input type="url" value={analysisUrl} onChange={(event) => setAnalysisUrl(event.target.value)} placeholder="https://example.org/opportunity" required /><button disabled={analysing}>{analysing ? 'Analysing…' : 'Analyse URL'}</button>{analysis && <small className={analysis.error ? 'error' : analysis.warning ? 'warning' : ''}>{analysis.error || `${analysis.title || 'Opportunity'} — ${analysis.recommended_action || 'Review'} · Due ${analysis.due_date || 'Not stated'}${analysis.warning ? ` — ${analysis.warning}` : ''}`}</small>}</form></section>
+          <section className="intake analyzer"><div><label>ONE-OFF ANALYSIS</label><h2>Analyse an opportunity now</h2><p>Paste one public opportunity page for an immediate relevance score, eligibility notes, and deadline. It will not be added to recurring monitoring.</p></div><form onSubmit={analyse}><input type="url" value={analysisUrl} onChange={(event) => setAnalysisUrl(event.target.value)} placeholder="https://example.org/opportunity" required /><button disabled={analysing}>{analysing ? 'Analysing…' : 'Analyse URL'}</button>{analysis && <small className={analysis.error ? 'error' : analysis.warning ? 'warning' : ''}>{analysis.error || `${analysis.title || 'Opportunity'} — ${analysis.recommended_action || 'Review'} · Due ${analysis.due_date || 'Not stated'}${analysis.warning ? ` — ${analysis.warning}` : ''}`}{analysis.blockedUrl && <> <a className="blockedSourceLink" href={analysis.blockedUrl} target="_blank" rel="noreferrer">Open official page ↗</a></>}</small>}</form></section>
         </div>
       </section>
       <aside><section className="rail"><h2>OPPORTUNITY ANALYSIS</h2><b className="big">{data.count}</b><p>Total Matches</p><div className="bar"><label>High priority <span>{high}</span></label><b><i className="red" style={{ width: `${data.count ? high / data.count * 100 : 0}%` }} /></b></div><div className="bar"><label>Review queue <span>{Math.max(data.count - high, 0)}</span></label><b><i className="teal" style={{ width: `${data.count ? Math.max(data.count - high, 0) / data.count * 100 : 0}%` }} /></b></div></section><section className="rail trending"><h2>PRIORITY QUEUE</h2>{items.slice(0, 5).map((proposal, index) => <a href={`/opportunities/${proposal.id}`} key={proposal.id}><strong>{index + 1}</strong><span>{proposal.name}<small>{proposal.source}</small></span></a>)}</section></aside>

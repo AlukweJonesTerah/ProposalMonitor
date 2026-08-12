@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-08-11T18:42:15.640163+00:00",
-  "count": 6,
+  "generated_at": "2026-08-12T00:46:06.080218+00:00",
+  "count": 8,
   "proposals": [
     {
       "id": "bc97777e6c0833cb",
@@ -97,6 +97,38 @@
       "status": "Review required",
       "owner": "Project team",
       "review_due_date": "2026-08-13"
+    },
+    {
+      "id": "166f9b27c5e956f4",
+      "name": "Certification",
+      "category": "Certification",
+      "link": "https://www.bluedot-network.org/certification",
+      "due_date": "Not stated",
+      "source": "bluedot-network.org",
+      "keywords": "apply for certification",
+      "relevance_score": "Medium",
+      "match_reason": "Matched configured ICT keyword(s): apply for certification.",
+      "eligibility_notes": "Review source document for eligibility requirements.",
+      "recommended_action": "Review",
+      "status": "Review required",
+      "owner": "Project team",
+      "review_due_date": "2026-08-14"
+    },
+    {
+      "id": "3c2462dbed3db6a6",
+      "name": "OECD InfraDays 2026 Highlights the Growing Global Momentum Behind Blue Dot Network Certification",
+      "category": "Certification",
+      "link": "https://www.bluedot-network.org/news/bdn-certificationceremony",
+      "due_date": "Not stated",
+      "source": "bluedot-network.org",
+      "keywords": "apply for certification",
+      "relevance_score": "Medium",
+      "match_reason": "Matched configured ICT keyword(s): apply for certification.",
+      "eligibility_notes": "Review source document for eligibility requirements.",
+      "recommended_action": "Review",
+      "status": "Review required",
+      "owner": "Project team",
+      "review_due_date": "2026-08-14"
     }
   ]
 }

@@ -1,0 +1,53 @@
+services:
+  - type: web
+    name: scriper-tester
+    runtime: docker
+    plan: starter
+    region: frankfurt
+    dockerfilePath: ./Dockerfile.render
+    dockerContext: .
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit
+    disk:
+      name: proposal-output
+      mountPath: /app/proposal_output
+      sizeGB: 1
+    envVars:
+      - key: NEXT_PUBLIC_SUPABASE_URL
+        sync: false
+      - key: NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: FIRECRAWL_API_KEY
+        sync: false
+      - key: ALERT_EMAIL_TO
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USERNAME
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: SMTP_FROM
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-3.5-flash
+      - key: GEMINI_BATCH_SIZE
+        value: "10"
+      - key: AI_CLASSIFICATION_LIMIT
+        value: "30"
+      - key: PROPOSAL_MONITOR_INTERVAL_SECONDS
+        value: "21600"
+      - key: MYGOV_ALERT_HOUR
+        value: "9"
+      - key: MYGOV_ALERT_MINUTE
+        value: "0"
+      - key: ENABLE_PUBLIC_WEB_DISCOVERY
+        value: "false"

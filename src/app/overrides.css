@@ -3,6 +3,7 @@
 .intake small.error { color: #a33; }
 .analyzer form > small { display: block; line-height: 1.55; margin-top: 11px; max-width: 100%; }
 .analyzer small.warning { color: #8a5a00; }
+.analyzer .blockedSourceLink { color: #1a578c; font-weight: 700; margin-left: 6px; text-decoration: underline; }
 .actionRow { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 23px; }
 .main > .actionRow { width: calc(100% + 318px); }
 .actionRow .intake { display: block; margin-top: 0; min-height: 282px; }

@@ -15,7 +15,7 @@
     "review_due_date": "2026-08-17",
     "title": "Open University of Kenya Tender Notice.pdf",
     "link": "https://gaa.go.ke/sites/default/files/2026-08/%20Open%20University%20of%20Kenya%20Tender%20Notice.pdf",
-    "last_seen": "2026-08-11"
+    "last_seen": "2026-08-12"
   },
   "91b402a21c251619": {
     "status": "Review required",
@@ -276,7 +276,7 @@
     "review_due_date": "2026-08-13",
     "title": "NATIONAL ENVIRONMENT MANAGEMENT AUTHORITY (NEMA) OPEN NATIONAL TENDER SUPPLY, DELIVERY, INSTALLATION AND COMMISSIONING OF LABORATORY EQUIPMENT TENDER REF. NO. N",
     "link": "https://nema.go.ke/wp-content/uploads/2026/03/TENDER-NO-NEMA-T-04-2025-2026-Tender-Supply-DeliveryInstallation-and-Commissioning-of-Laboratory-Equipment.pdf",
-    "last_seen": "2026-08-11"
+    "last_seen": "2026-08-12"
   },
   "9b0fded721a6ff45": {
     "status": "Review required",
@@ -285,7 +285,7 @@
     "review_due_date": "2026-08-13",
     "title": "Standard Tender Documents \u2013 Public Procurement Regulatory Authority \u00d7 Close Close \u00d7 Close Close \u00d7 Close loading... File Properties Name File Uploader Folder PPA",
     "link": "https://ppra.go.ke/standard-tender-documents",
-    "last_seen": "2026-08-11"
+    "last_seen": "2026-08-12"
   },
   "2ecdce5dc66c44ea": {
     "status": "Review required",
@@ -312,7 +312,7 @@
     "review_due_date": "2026-08-13",
     "title": "Climate Change AI Grant Calls",
     "link": "https://www.climatechange.ai/calls",
-    "last_seen": "2026-08-11"
+    "last_seen": "2026-08-12"
   },
   "17124d19bfc6b3cd": {
     "status": "Review required",
@@ -321,7 +321,7 @@
     "review_due_date": "2026-08-13",
     "title": "Climate Change AI Innovation Grants",
     "link": "https://www.climatechange.ai/innovation_grants",
-    "last_seen": "2026-08-11"
+    "last_seen": "2026-08-12"
   },
   "aa16da3072f3ff5b": {
     "status": "Review required",
@@ -330,6 +330,24 @@
     "review_due_date": "2026-08-13",
     "title": "Climate Change AI Announces Innovation Grantees (April 29, 2026) | Climate Change AI",
     "link": "https://www.climatechange.ai/press_releases/2026-04-29/release",
-    "last_seen": "2026-08-11"
+    "last_seen": "2026-08-12"
+  },
+  "166f9b27c5e956f4": {
+    "status": "Review required",
+    "owner": "Project team",
+    "first_seen": "2026-08-12",
+    "review_due_date": "2026-08-14",
+    "title": "Certification",
+    "link": "https://www.bluedot-network.org/certification",
+    "last_seen": "2026-08-12"
+  },
+  "3c2462dbed3db6a6": {
+    "status": "Review required",
+    "owner": "Project team",
+    "first_seen": "2026-08-12",
+    "review_due_date": "2026-08-14",
+    "title": "OECD InfraDays 2026 Highlights the Growing Global Momentum Behind Blue Dot Network Certification",
+    "link": "https://www.bluedot-network.org/news/bdn-certificationceremony",
+    "last_seen": "2026-08-12"
   }
 }
