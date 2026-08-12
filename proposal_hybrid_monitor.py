@@ -68,7 +68,7 @@ def collect_raw(session: requests.Session, source: dict, keywords: list[str]) ->
             text = clean(soup.get_text(" ", strip=True))
             title = preferred_title(clean(heading.get_text(" ", strip=True) if heading else label), text)
         if text:
-            raw.append({"id": candidate_id(source["start_urls"][0], url), "source": source["name"], "url": url, "title": title or "Untitled candidate", "content": text[:100000]})
+            raw.append({"id": candidate_id(source["start_urls"][0], url), "source": source["name"], "source_url": source["start_urls"][0], "url": url, "title": title or "Untitled candidate", "content": text[:100000]})
     print(f"Collected {len(raw)} raw candidate(s) from {source['name']}.")
     return raw
 
@@ -94,7 +94,7 @@ class Store:
     def save_raw(self, run_id: str, candidates: list[dict], sources: dict[str, dict]) -> None:
         now = datetime.now(timezone.utc).isoformat()
         for candidate in candidates:
-            row = {"id": candidate["id"], "proposal_source_id": self.source_id(sources[candidate["source"]]), "scrape_run_id": run_id, "source_name": candidate["source"], "url": candidate["url"], "title": candidate["title"], "raw_content": candidate["content"], "content_hash": hashlib.sha256(candidate["content"].encode()).hexdigest(), "last_seen_at": now, "scraped_at": now}
+            row = {"id": candidate["id"], "proposal_source_id": self.source_id(sources[candidate["source_url"]]), "scrape_run_id": run_id, "source_name": candidate["source"], "url": candidate["url"], "title": candidate["title"], "raw_content": candidate["content"], "content_hash": hashlib.sha256(candidate["content"].encode()).hexdigest(), "last_seen_at": now, "scraped_at": now}
             self.client.table("raw_candidates").upsert(row).execute()
 
     def save_classifications(self, rows: list[dict]) -> None:
@@ -128,6 +128,17 @@ def balanced_selection(candidates: list[dict], limit: int) -> list[dict]:
             if groups[source] and len(selected) < limit:
                 selected.append(groups[source].pop(0))
     return selected
+
+
+def unique_candidates(candidates: list[dict]) -> list[dict]:
+    """Keep the first discovery of each canonical page URL."""
+    seen: set[str] = set()
+    unique: list[dict] = []
+    for candidate in candidates:
+        if candidate["url"] not in seen:
+            unique.append(candidate)
+            seen.add(candidate["url"])
+    return unique
 
 
 def valid_due_date(value: object) -> str:
@@ -198,9 +209,13 @@ def run_monitor() -> int:
         print("Supabase audit storage skipped: SUPABASE_URL / SUPABASE_SERVICE_KEY not set.")
     with requests.Session() as session:
         candidates = [item for source in sources for item in collect_raw(session, source, config["keywords"])]
+    # A page can be linked from more than one approved source.  The database
+    # intentionally stores one audit record per canonical URL, so retain the
+    # first source that found each URL before saving or classifying it.
+    candidates = unique_candidates(candidates)
     if store:
         try:
-            store.save_raw(run_id, candidates, {s["name"]: s for s in sources})
+            store.save_raw(run_id, candidates, {s["start_urls"][0]: s for s in sources})
             print(f"Stored {len(candidates)} raw candidate(s) in Supabase.")
         except Exception as error:
             print(f"Could not save raw candidates: {error}", file=sys.stderr)

@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-08-12T05:40:58.364438+00:00",
-  "count": 4,
+  "generated_at": "2026-08-12T07:35:20.543908+00:00",
+  "count": 5,
   "proposals": [
     {
       "name": "Capital Markets Authority Tender Notice for Supply, Implementation, Training and Maintenance of a Virtual Assets Blockchain Analytics System.pdf",
@@ -29,30 +29,43 @@
       "archived_at": "2026-08-12T05:40:58.364438+00:00"
     },
     {
-      "name": "Page 1 of 8 REPUBLIC OF KENYA NATIONAL ENVIRONMENT MANAGEMENT AUTHORITY (NEMA) INTERNATIONAL TENDER NOTICE REQUEST FOR EXPRESSION OF INTEREST (EOI) FOR PRE-VERI",
+      "name": "NEMA Request for Expression of Interest for Designing Comprehensive In-Country Waste Collection and Management System",
       "category": "Analytics",
       "link": "https://nema.go.ke/wp-content/uploads/2025/12/Tender-no.-NEMAEOI012025-2026_EOI_International-Tender.pdf",
       "due_date": "2025-12-19",
       "source": "National Environment Management Authority",
       "keywords": "analysis, training",
       "relevance_score": "High",
-      "match_reason": "Matched configured ICT keyword(s): analysis, training.",
-      "eligibility_notes": "Review source document for eligibility requirements.",
-      "recommended_action": "Review",
-      "archived_at": "2026-08-12T05:40:58.364438+00:00"
+      "match_reason": "Requires designing a digital monitoring platform, a comprehensive waste management information/accounting system, generating database platforms, and delivering customizable training courses.",
+      "eligibility_notes": "Open to firms with at least 5 years of business experience, demonstrating technical and managerial capacity, with reference to three similar completed assignments.",
+      "recommended_action": "Pursue",
+      "archived_at": "2026-08-12T07:28:53.506465+00:00"
     },
     {
-      "name": "Call for Proposals: Climate Change AI Innovation Grants 2024",
-      "category": "Data science",
+      "name": "Climate Change AI Innovation Grants 2024",
+      "category": "Digital Health & Climate Tech",
       "link": "https://www.climatechange.ai/calls/innovation_grants_2024",
       "due_date": "2024-09-15",
       "source": "climatechange.ai",
-      "keywords": "machine learning, artificial intelligence, training",
+      "keywords": "machine learning, artificial intelligence, grant application, funding opportunity",
       "relevance_score": "High",
-      "match_reason": "Matched configured ICT keyword(s): machine learning, artificial intelligence, training.",
-      "eligibility_notes": "Review source document for eligibility requirements.",
-      "recommended_action": "Review",
-      "archived_at": "2026-08-12T05:40:58.364438+00:00"
+      "match_reason": "An active call for grant applications specifically funding research and deployment at the intersection of artificial intelligence, machine learning, and climate change.",
+      "eligibility_notes": "The Principal Investigator must be affiliated with an accredited university in one of the 38 OECD Member Countries. Co-Investigators can be based anywhere globally and be affiliated with non-research institutions.",
+      "recommended_action": "Pursue",
+      "archived_at": "2026-08-12T07:35:20.543908+00:00"
+    },
+    {
+      "name": "Supply and installation of agentic AI automation system with Robotic Process Automation (RPA) integration",
+      "category": "Other",
+      "link": "https://gaa.go.ke/sites/default/files/2026-07/Kenya%20Reinsurance%20Corporation%20Limited%20Invitation%20to%20Tender.pdf",
+      "due_date": "2026-08-04",
+      "source": "myGov Kenya",
+      "keywords": "artificial intelligence",
+      "relevance_score": "High",
+      "match_reason": "The tender is directly for the supply and installation of an agentic artificial intelligence automation system with RPA integration.",
+      "eligibility_notes": "National Tender. Requires a tender security of Kshs. 500,000.",
+      "recommended_action": "Pursue",
+      "archived_at": "2026-08-12T07:35:20.543908+00:00"
     }
   ]
 }

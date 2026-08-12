@@ -12,6 +12,7 @@ import re
 import smtplib
 import time
 from datetime import date, datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 from email.message import EmailMessage
 from io import BytesIO
 from pathlib import Path
@@ -291,10 +292,15 @@ def review_due_date(item: dict[str, str], today: date) -> str:
     return (today + timedelta(days=2)).isoformat()
 
 
+def proposal_today() -> date:
+    """Return the current calendar day used for Kenya-based proposal deadlines."""
+    return datetime.now(ZoneInfo("Africa/Nairobi")).date()
+
+
 def is_expired(item: dict[str, str], today: date | None = None) -> bool:
     if item.get("due_date") in (None, "", "Not stated"):
         return False
-    return datetime.fromisoformat(item["due_date"]).date() < (today or date.today())
+    return datetime.fromisoformat(item["due_date"]).date() < (today or proposal_today())
 
 
 def merge_with_dashboard_snapshot(fresh: list[dict[str, str]]) -> list[dict[str, str]]:
