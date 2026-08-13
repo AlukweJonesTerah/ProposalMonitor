@@ -1,25 +1,12 @@
-# Production Dockerfile for Next.js
-FROM node:22-alpine AS deps
+# Production image for Render: dashboard, monitor, and alert scheduler share
+# the persistent proposal_output disk consumed by the dashboard.
+FROM node:22-bookworm-slim AS deps
 WORKDIR /app
 
-RUN apk add --no-cache libc6-compat
-
 COPY package.json ./
+RUN npm install
 
-RUN set -e; \
-    echo "[prod] Installing dependencies"; \
-    if [ -f yarn.lock ]; then \
-        yarn install --frozen-lockfile; \
-    elif [ -f package-lock.json ]; then \
-        npm ci; \
-    elif [ -f pnpm-lock.yaml ]; then \
-        corepack enable pnpm && pnpm install --frozen-lockfile; \
-    else \
-        echo "[prod] No lockfile found; using npm install"; \
-        npm install; \
-    fi
-
-FROM node:22-alpine AS builder
+FROM node:22-bookworm-slim AS builder
 WORKDIR /app
 
 ARG NEXT_PUBLIC_SUPABASE_URL
@@ -33,38 +20,42 @@ ENV NODE_ENV=production \
     NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL \
     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 
-RUN set -e; \
-    echo "[prod] Building application"; \
-    if [ -f yarn.lock ]; then \
-        yarn build; \
-    elif [ -f package-lock.json ]; then \
-        npm run build; \
-    elif [ -f pnpm-lock.yaml ]; then \
-        corepack enable pnpm && pnpm run build; \
-    else \
-        npm run build; \
-    fi
+RUN npm run build
 
-FROM node:22-alpine AS runner
+FROM node:22-bookworm-slim AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
-    PORT=3000 \
-    HOSTNAME=0.0.0.0
+    PORT=10000 \
+    HOSTNAME=0.0.0.0 \
+    PYTHONUNBUFFERED=1 \
+    PROPOSAL_SOURCE_CONFIG=/app/proposal_output/proposal_source.json \
+    PATH=/opt/venv/bin:$PATH
 
-RUN addgroup --system --gid 1001 nextjs && adduser --system --uid 1001 nextjs
-RUN mkdir -p /app/.next && chown -R nextjs:nextjs /app/.next
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends python3 python3-venv build-essential \
+    && rm -rf /var/lib/apt/lists/* \
+    && python3 -m venv /opt/venv
 
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/next.config.js ./next.config.js
-COPY --from=builder --chown=nextjs:nextjs /app/Migrations ./Migrations
-COPY --from=builder --chown=nextjs:nextjs /app/proposal_output ./proposal_output
+COPY requirements.txt ./
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt
+
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/Migrations ./Migrations
+COPY --from=builder /app/proposal_output ./proposal_output
+COPY --from=builder /app/proposal_monitor_runtime.py /app/proposal_hybrid_monitor.py /app/proposal_research_agent.py /app/proposal_scheduler.py /app/mygov_alert_scheduler.py ./
+COPY --from=builder /app/start-render.sh ./start-render.sh
 
-USER nextjs
+RUN chmod +x ./start-render.sh \
+    && mkdir -p ./proposal_output \
+    && chown -R node:node /app
 
-EXPOSE 3000
-CMD ["node", "server.js"]
+# start-render.sh sets ownership on Render's runtime-mounted disk and then
+# re-executes itself as the unprivileged node user.
+USER root
+EXPOSE 10000
+CMD ["./start-render.sh"]
