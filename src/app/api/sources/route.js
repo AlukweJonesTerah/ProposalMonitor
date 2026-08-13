@@ -3,14 +3,32 @@ import path from 'path';
 import { lookup } from 'dns/promises';
 import { isIP } from 'net';
 
-const intakeFile = path.join(process.cwd(), 'Migrations', 'pending_source_intake.json');
-const configFile = path.join(process.cwd(), 'Migrations', 'proposal_source.json');
-const analysisFile = path.join(process.cwd(), 'proposal_output', 'one_off_analysis_links.json');
+const outputDir = path.join(process.cwd(), 'proposal_output');
+const intakeFile = path.join(outputDir, 'pending_source_intake.json');
+const configFile = path.join(outputDir, 'proposal_source.json');
+const intakeTemplateFile = path.join(process.cwd(), 'Migrations', 'pending_source_intake.json');
+const configTemplateFile = path.join(process.cwd(), 'Migrations', 'proposal_source.json');
+const analysisFile = path.join(outputDir, 'one_off_analysis_links.json');
 const resultsFile = path.join(process.cwd(), 'proposal_output', 'proposals.json');
 
+async function ensureEditableFile(file, template, fallback) {
+  try { return await readFile(file, 'utf8'); }
+  catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+    await mkdir(outputDir, { recursive: true });
+    const initial = await readFile(template, 'utf8').catch(() => fallback);
+    try { await writeFile(file, initial, { flag: 'wx' }); }
+    catch (writeError) { if (writeError.code !== 'EEXIST') throw writeError; }
+    return readFile(file, 'utf8');
+  }
+}
+
+async function readConfig() {
+  return JSON.parse(await ensureEditableFile(configFile, configTemplateFile, '{"sources": []}\n'));
+}
+
 async function readIntake() {
-  try { return JSON.parse(await readFile(intakeFile, 'utf8')); }
-  catch (error) { if (error.code === 'ENOENT') return []; throw error; }
+  return JSON.parse(await ensureEditableFile(intakeFile, intakeTemplateFile, '[]\n'));
 }
 
 function isPrivateAddress(address) {
@@ -51,7 +69,7 @@ export async function GET() {
   try {
     const [sources, config, analyses, results] = await Promise.all([
       readIntake(),
-      readFile(configFile, 'utf8').then(JSON.parse).catch(() => ({ sources: [] })),
+      readConfig(),
       readFile(analysisFile, 'utf8').then(JSON.parse).catch(() => []),
       readFile(resultsFile, 'utf8').then(JSON.parse).catch(() => ({ proposals: [] })),
     ]);
@@ -65,7 +83,7 @@ export async function PATCH(request) {
     const body = await request.json();
     const { url, action } = body;
     if (body.operation) {
-      const config = JSON.parse(await readFile(configFile, 'utf8'));
+      const config = await readConfig();
       if (body.operation === 'add') {
         const publicUrl = await safePublicUrl(body.url);
         const parsed = new URL(publicUrl);
@@ -102,7 +120,7 @@ export async function PATCH(request) {
     if (action === 'approve') {
       const publicUrl = await safePublicUrl(url);
       const parsed = new URL(publicUrl);
-      const config = JSON.parse(await readFile(configFile, 'utf8'));
+      const config = await readConfig();
       const known = new Set((config.sources || []).flatMap((source) => source.start_urls || []));
       if (!known.has(publicUrl)) {
         config.sources.push({ name: parsed.hostname.replace(/^www\./, ''), source_type: 'approved_submission', start_urls: [publicUrl], allowed_domains: [parsed.hostname.replace(/^www\./, '')], max_links: 40, active: true, check_frequency: 'Every monitor run' });

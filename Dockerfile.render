@@ -30,6 +30,7 @@ ENV NODE_ENV=production \
     PORT=10000 \
     HOSTNAME=0.0.0.0 \
     PYTHONUNBUFFERED=1 \
+    PROPOSAL_SOURCE_CONFIG=/app/proposal_output/proposal_source.json \
     PATH=/opt/venv/bin:$PATH
 
 RUN apt-get update \

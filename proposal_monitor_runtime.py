@@ -502,7 +502,7 @@ def email_alert(items: list[dict[str, str]]) -> bool:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Collect matching proposals and export a workplan.")
-    parser.add_argument("--config", type=Path, default=ROOT / "Migrations" / "proposal_source.json")
+    parser.add_argument("--config", type=Path, default=Path(os.getenv("PROPOSAL_SOURCE_CONFIG", ROOT / "Migrations" / "proposal_source.json")))
     parser.add_argument("--output", type=Path, default=OUTPUT / "proposals.xlsx")
     parser.add_argument("--mygov-alert", action="store_true")
     parser.add_argument("--set-workflow", nargs=3, metavar=("TRACKER_ID", "STATUS", "OWNER"), help="Update a review task, for example: --set-workflow abc123 Reviewing Olivia")

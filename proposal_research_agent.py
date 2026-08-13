@@ -149,7 +149,7 @@ Pages: {pages}""".format(keywords=json.dumps(keywords), pages=json.dumps(materia
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Discover proposal opportunities with Firecrawl and Gemini.")
-    parser.add_argument("--config", type=Path, default=ROOT / "Migrations" / "proposal_source.json")
+    parser.add_argument("--config", type=Path, default=Path(os.getenv("PROPOSAL_SOURCE_CONFIG", ROOT / "Migrations" / "proposal_source.json")))
     parser.add_argument("--output", type=Path, default=OUTPUT / "proposals.xlsx")
     args = parser.parse_args()
     load_dotenv(ROOT / ".env")

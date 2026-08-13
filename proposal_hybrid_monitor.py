@@ -184,7 +184,7 @@ def gemini(candidates: list[dict], keywords: list[str]) -> list[dict]:
 
 def run_monitor() -> int:
     parser = argparse.ArgumentParser(description="Run the hybrid proposal pipeline.")
-    parser.add_argument("--config", type=Path, default=ROOT / "Migrations" / "proposal_source.json")
+    parser.add_argument("--config", type=Path, default=Path(os.getenv("PROPOSAL_SOURCE_CONFIG", ROOT / "Migrations" / "proposal_source.json")))
     parser.add_argument("--output", type=Path, default=OUTPUT / "proposals.xlsx")
     parser.add_argument("--classification-mode", choices=("auto", "gemini", "deterministic"), default="auto")
     parser.add_argument("--ai-limit", type=int, default=int(os.getenv("AI_CLASSIFICATION_LIMIT", "30")))
@@ -254,7 +254,8 @@ def run_monitor() -> int:
     if args.scheduled_alert:
         priority = [proposal for proposal in proposals if proposal.get("relevance_score") in {"High", "Medium"}]
         if priority:
-            email_alert(priority)
+            if not email_alert(priority):
+                return 1
         else:
             print("No high- or medium-priority proposals to include in the scheduled briefing.")
     return 0
@@ -270,7 +271,9 @@ def main() -> int:
         descriptor = os.open(lock_file, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
     except FileExistsError:
         print("Another proposal monitor run is already in progress; skipping this overlapping run.")
-        return 0
+        # 75 tells the alert scheduler this is temporary, so it retries after
+        # the active monitor releases the lock instead of marking the alert done.
+        return 75
     try:
         os.write(descriptor, str(os.getpid()).encode())
         return run_monitor()
