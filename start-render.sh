@@ -23,6 +23,10 @@ if [ ! -f /app/proposal_output/pending_source_intake.json ]; then
   fi
 fi
 
+# This is an in-progress-process marker, never persistent application data.
+# A prior deployment may have been stopped before it could remove the lock.
+rm -f /app/proposal_output/.monitor.lock
+
 # These schedulers write the proposal_output/ files consumed by the dashboard.
 # Keep them in this service until the dashboard is migrated to read from a
 # shared database or object store.

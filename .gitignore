@@ -8,3 +8,4 @@ __pycache__/
 *.pyc
 proposal_output/proposal_source.json
 proposal_output/pending_source_intake.json
+proposal_output/.monitor.lock

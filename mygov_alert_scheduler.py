@@ -89,6 +89,8 @@ def main() -> int:
             if result.returncode == 0:
                 save_last_run(now.date().isoformat())
                 print(f"Priority alert check completed for {now.date().isoformat()}.")
+            elif result.returncode == 75:
+                print("Priority alert is waiting for the active monitor run; it will retry.")
             else:
                 print(f"myGov alert check failed (exit code {result.returncode}); it will retry.")
         time.sleep(60)
