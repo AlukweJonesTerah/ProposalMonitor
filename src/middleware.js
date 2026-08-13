@@ -42,6 +42,26 @@ function secureHeaders(response) {
   return response;
 }
 
+function firstHeaderValue(value) {
+  return value?.split(',')[0]?.trim();
+}
+
+function isSameOriginRequest(request, origin) {
+  try {
+    const originUrl = new URL(origin);
+    const host = firstHeaderValue(request.headers.get('x-forwarded-host'))
+      || request.headers.get('host');
+    const protocol = firstHeaderValue(request.headers.get('x-forwarded-proto'))
+      || request.nextUrl.protocol.replace(/:$/, '');
+
+    return Boolean(host)
+      && originUrl.host === host
+      && originUrl.protocol === `${protocol}:`;
+  } catch {
+    return false;
+  }
+}
+
 export function middleware(request) {
   if (!request.nextUrl.pathname.startsWith('/api/')) return secureHeaders(NextResponse.next());
 
@@ -50,7 +70,7 @@ export function middleware(request) {
 
   if (['POST', 'PATCH', 'PUT', 'DELETE'].includes(request.method)) {
     const origin = request.headers.get('origin');
-    if (origin && origin !== request.nextUrl.origin) {
+    if (origin && !isSameOriginRequest(request, origin)) {
       return secureHeaders(NextResponse.json({ error: 'Cross-site requests are not allowed.' }, { status: 403 }));
     }
   }

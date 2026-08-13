@@ -13,6 +13,30 @@ This project now includes a simple Docker-based setup for running both a Python 
 
 Install Docker Desktop and make sure Docker is running on your machine.
 
+## Multi-container applications
+
+**Estimated time:** 8 mins
+
+If you have completed Docker's "How do I run a container?" guide, you saw
+that each container must be started individually. Docker Compose lets you
+start multiple containers with a single command.
+
+This project uses Docker Compose to build and run all services defined in its
+compose file. From the project directory, run:
+
+```bash
+docker compose up -d
+```
+
+The `-d` flag runs the containers in detached mode: they continue running in
+the background while your terminal is returned immediately.
+
+To explore Docker's example multi-container application:
+
+```bash
+git clone https://github.com/docker/multi-container-app
+```
+
 ## Run the project
 
 From the project root, run:

@@ -112,6 +112,6 @@ export async function PATCH(request) {
     item.status = action === 'approve' ? 'approved' : 'rejected';
     item.reviewed_at = new Date().toISOString();
     await writeFile(intakeFile, JSON.stringify(sources, null, 2) + '\n');
-    return Response.json({ source: item });
+    return Response.json({ source: item, message: action === 'approve' ? 'Source approved and added to recurring monitoring.' : 'Source rejected.' });
   } catch (error) { return Response.json({ error: error.message || 'Could not review this source.' }, { status: 400 }); }
 }

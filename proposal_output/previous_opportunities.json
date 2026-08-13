@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-12T07:35:20.543908+00:00",
+  "generated_at": "2026-08-13T06:14:48.281239+00:00",
   "count": 5,
   "proposals": [
     {
@@ -29,30 +29,30 @@
       "archived_at": "2026-08-12T05:40:58.364438+00:00"
     },
     {
-      "name": "NEMA Request for Expression of Interest for Designing Comprehensive In-Country Waste Collection and Management System",
-      "category": "Analytics",
+      "name": "Request for Expression of Interest (EOI) for Designing of a Comprehensive In-Country Waste Collection and Management System",
+      "category": "Other",
       "link": "https://nema.go.ke/wp-content/uploads/2025/12/Tender-no.-NEMAEOI012025-2026_EOI_International-Tender.pdf",
       "due_date": "2025-12-19",
       "source": "National Environment Management Authority",
       "keywords": "analysis, training",
       "relevance_score": "High",
-      "match_reason": "Requires designing a digital monitoring platform, a comprehensive waste management information/accounting system, generating database platforms, and delivering customizable training courses.",
-      "eligibility_notes": "Open to firms with at least 5 years of business experience, demonstrating technical and managerial capacity, with reference to three similar completed assignments.",
-      "recommended_action": "Pursue",
-      "archived_at": "2026-08-12T07:28:53.506465+00:00"
+      "match_reason": "The EOI requests a consultant to design a comprehensive digital waste management architecture, information system, web-based payment tracking gateway, database, and provide training.",
+      "eligibility_notes": "The consultant must have at least 5 years of experience, proven technical/managerial capability, and 3 reference assignments of similar size in the last 5 years.",
+      "recommended_action": "Review",
+      "archived_at": "2026-08-13T06:14:48.281239+00:00"
     },
     {
-      "name": "Climate Change AI Innovation Grants 2024",
+      "name": "Call for Proposals: Climate Change AI Innovation Grants 2024",
       "category": "Digital Health & Climate Tech",
       "link": "https://www.climatechange.ai/calls/innovation_grants_2024",
       "due_date": "2024-09-15",
       "source": "climatechange.ai",
-      "keywords": "machine learning, artificial intelligence, grant application, funding opportunity",
+      "keywords": "artificial intelligence, machine learning, funding opportunity",
       "relevance_score": "High",
-      "match_reason": "An active call for grant applications specifically funding research and deployment at the intersection of artificial intelligence, machine learning, and climate change.",
-      "eligibility_notes": "The Principal Investigator must be affiliated with an accredited university in one of the 38 OECD Member Countries. Co-Investigators can be based anywhere globally and be affiliated with non-research institutions.",
-      "recommended_action": "Pursue",
-      "archived_at": "2026-08-12T07:35:20.543908+00:00"
+      "match_reason": "This is an active funding opportunity for projects utilizing artificial intelligence and machine learning to address climate change challenges.",
+      "eligibility_notes": "Principal Investigator must be affiliated with an accredited university in one of the 38 OECD Member Countries. Co-Investigators can be outside OECD countries (such as Africa) and from non-research organizations.",
+      "recommended_action": "Review",
+      "archived_at": "2026-08-13T06:14:48.281239+00:00"
     },
     {
       "name": "Supply and installation of agentic AI automation system with Robotic Process Automation (RPA) integration",
@@ -62,10 +62,10 @@
       "source": "myGov Kenya",
       "keywords": "artificial intelligence",
       "relevance_score": "High",
-      "match_reason": "The tender is directly for the supply and installation of an agentic artificial intelligence automation system with RPA integration.",
-      "eligibility_notes": "National Tender. Requires a tender security of Kshs. 500,000.",
+      "match_reason": "The tender is for the procurement and implementation of an agentic artificial intelligence system integrated with Robotic Process Automation (RPA).",
+      "eligibility_notes": "Open national tender. Bidders must provide a tender security of Kshs. 500,000.",
       "recommended_action": "Pursue",
-      "archived_at": "2026-08-12T07:35:20.543908+00:00"
+      "archived_at": "2026-08-13T06:14:48.281239+00:00"
     }
   ]
 }
