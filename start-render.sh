@@ -1,6 +1,14 @@
 #!/bin/sh
 set -eu
 
+# Render mounts the persistent disk after the image is built, owned by root.
+# Fix its ownership at startup, then run the application without root access.
+if [ "$(id -u)" = "0" ]; then
+  mkdir -p /app/proposal_output
+  chown -R node:node /app/proposal_output
+  exec su -s /bin/sh node -c /app/start-render.sh
+fi
+
 # Render only provides a writable persistent disk at /app/proposal_output.
 # Seed editable source data once; subsequent deployments retain administrators'
 # additions, approvals, edits, and removals.

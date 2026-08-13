@@ -54,6 +54,8 @@ RUN chmod +x ./start-render.sh \
     && mkdir -p ./proposal_output \
     && chown -R node:node /app
 
-USER node
+# The startup script runs briefly as root to take ownership of Render's
+# runtime-mounted persistent disk, then immediately re-executes as node.
+USER root
 EXPOSE 10000
 CMD ["./start-render.sh"]
