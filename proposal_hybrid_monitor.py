@@ -19,7 +19,7 @@ from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 
 from proposal_monitor_runtime import (
-    DISCOVERY_TERMS, OUTPUT, active_sources, allowed, canonical_url, category,
+    DISCOVERY_TERMS, JS_PLACEHOLDER_HEADINGS, OUTPUT, active_sources, allowed, canonical_url, category,
     due_date, email_alert, export, fetch, is_expired, is_ict_related, item_id, merge_with_dashboard_snapshot, preferred_title, sync_workflow, write_dashboard_results,
 )
 
@@ -69,9 +69,12 @@ def collect_raw(session: requests.Session, source: dict, keywords: list[str]) ->
             text, title = clean(body), preferred_title(label, body)
         else:
             soup = BeautifulSoup(body, "html.parser")
-            heading = soup.find("h1") or soup.find("title")
+            heading_tag = soup.find("h1") or soup.find("title")
+            heading = clean(heading_tag.get_text(" ", strip=True)) if heading_tag else ""
+            if heading.casefold() in JS_PLACEHOLDER_HEADINGS:
+                continue
             text = clean(soup.get_text(" ", strip=True))
-            title = preferred_title(clean(heading.get_text(" ", strip=True) if heading else label), text)
+            title = preferred_title(heading or label, text)
         if text:
             raw.append({"id": candidate_id(source["start_urls"][0], url), "source": source["name"], "source_url": source["start_urls"][0], "url": url, "title": title or "Untitled candidate", "content": text[:100000]})
     print(f"Collected {len(raw)} raw candidate(s) from {source['name']}.")

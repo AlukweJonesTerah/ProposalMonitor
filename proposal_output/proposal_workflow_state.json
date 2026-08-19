@@ -15,7 +15,7 @@
     "review_due_date": "2026-08-17",
     "title": "Open University of Kenya Tender Notice.pdf",
     "link": "https://gaa.go.ke/sites/default/files/2026-08/%20Open%20University%20of%20Kenya%20Tender%20Notice.pdf",
-    "last_seen": "2026-08-13"
+    "last_seen": "2026-08-19"
   },
   "91b402a21c251619": {
     "status": "Review required",
@@ -411,6 +411,42 @@
     "review_due_date": "2026-08-19",
     "title": "Open University of Kenya Supplier Prequalification (2026-2028)",
     "link": "https://gaa.go.ke/sites/default/files/2026-08/%20Open%20University%20of%20Kenya%20Tender%20Notice.pdf",
+    "last_seen": "2026-08-19"
+  },
+  "320989cb463a6fc4": {
+    "status": "Review required",
+    "owner": "Project team",
+    "first_seen": "2026-08-19",
+    "review_due_date": "2026-08-19",
+    "title": "Open University of Kenya Tender Notice (2026-2028 Prequalification)",
+    "link": "https://gaa.go.ke/sites/default/files/2026-08/%20Open%20University%20of%20Kenya%20Tender%20Notice.pdf",
+    "last_seen": "2026-08-19"
+  },
+  "ce8ef9e770e3db15": {
+    "status": "Review required",
+    "owner": "Project team",
+    "first_seen": "2026-08-19",
+    "review_due_date": "2026-08-21",
+    "title": "Climate Change AI Announces Innovation Grantees",
+    "link": "https://www.climatechange.ai/press_releases/2026-04-29/release",
+    "last_seen": "2026-08-19"
+  },
+  "e13e929edb52e9f0": {
+    "status": "Review required",
+    "owner": "Project team",
+    "first_seen": "2026-08-19",
+    "review_due_date": "2026-08-19",
+    "title": "Open University of Kenya Tender Notice for Supplier Registration and Prequalification (2026-2028)",
+    "link": "https://gaa.go.ke/sites/default/files/2026-08/%20Open%20University%20of%20Kenya%20Tender%20Notice.pdf",
+    "last_seen": "2026-08-19"
+  },
+  "5759423dfebda35b": {
+    "status": "Review required",
+    "owner": "Project team",
+    "first_seen": "2026-08-19",
+    "review_due_date": "2026-08-21",
+    "title": "Climate Change AI - Grant Calls",
+    "link": "https://www.climatechange.ai/calls",
     "last_seen": "2026-08-19"
   }
 }

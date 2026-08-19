@@ -68,9 +68,16 @@ def clean(value: str) -> str:
     return re.sub(r"\s+", " ", value).strip()
 
 
+GENERIC_LABELS = {"download", "loading...", "view", "read more", "click here"}
+# A heading matching one of these means the page's real content is rendered
+# client-side by JavaScript and never reached a plain HTTP fetch: the whole
+# page text is UI chrome, not just the title, so the candidate is unusable.
+JS_PLACEHOLDER_HEADINGS = {"loading...", "loading", "please wait", "please wait..."}
+
+
 def preferred_title(label: str, extracted_text: str) -> str:
     """Replace generic index-link labels with useful text extracted from the document."""
-    if label and label.casefold() not in {"download", "loading...", "view", "read more", "click here"}:
+    if label and label.casefold() not in GENERIC_LABELS:
         return label
     return clean(extracted_text)[:160] or label or "Untitled proposal"
 
@@ -238,8 +245,11 @@ def collect(session: requests.Session, source: dict, keywords: list[str]) -> lis
         else:
             soup = BeautifulSoup(body, "html.parser")
             title_tag = soup.find("h1") or soup.find("title")
+            heading = clean(title_tag.get_text(" ", strip=True)) if title_tag else ""
+            if heading.casefold() in JS_PLACEHOLDER_HEADINGS:
+                continue
             text = clean(soup.get_text(" ", strip=True))
-            title = preferred_title(clean(title_tag.get_text(" ", strip=True) if title_tag else label), text)
+            title = preferred_title(heading or label, text)
         matches = [word for word in keywords if word.lower() in f"{title} {text}".lower()]
         if matches and is_ict_related(title, text):
             results.append({"name": title or label or "Untitled proposal", "category": category(matches), "link": link, "due_date": due_date(text), "source": source["name"], "keywords": ", ".join(matches)})
