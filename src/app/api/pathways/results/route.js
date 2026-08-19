@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    return Response.json(await readResults(), { headers: { 'Cache-Control': 'no-store' } });
+    return Response.json(await readResults('pathways_'), { headers: { 'Cache-Control': 'no-store' } });
   } catch {
     return Response.json({ error: 'Could not read the latest proposal results.' }, { status: 500 });
   }

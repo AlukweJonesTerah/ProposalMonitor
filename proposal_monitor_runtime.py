@@ -294,10 +294,11 @@ def item_id(item: dict[str, str]) -> str:
     return hashlib.sha256(f"{item['link']}|{item['name']}".encode()).hexdigest()[:16]
 
 
-def load_workflow_state() -> dict[str, dict[str, str]]:
-    if not WORKFLOW_STATE_FILE.exists():
+def load_workflow_state(prefix: str = "") -> dict[str, dict[str, str]]:
+    state_file = OUTPUT / f"{prefix}proposal_workflow_state.json"
+    if not state_file.exists():
         return {}
-    return json.loads(WORKFLOW_STATE_FILE.read_text(encoding="utf-8"))
+    return json.loads(state_file.read_text(encoding="utf-8"))
 
 
 def review_due_date(item: dict[str, str], today: date) -> str:
@@ -318,14 +319,14 @@ def is_expired(item: dict[str, str], today: date | None = None) -> bool:
     return datetime.fromisoformat(item["due_date"]).date() < (today or proposal_today())
 
 
-def merge_with_dashboard_snapshot(fresh: list[dict[str, str]]) -> list[dict[str, str]]:
+def merge_with_dashboard_snapshot(fresh: list[dict[str, str]], prefix: str = "") -> list[dict[str, str]]:
     """Keep previously found, still-active opportunities between monitor runs.
 
     A fresh record with the same official link replaces the old copy; expired
     records are removed. This prevents a temporary source-page change from
     making valid earlier proposals disappear from the dashboard or workbook.
     """
-    snapshot = OUTPUT / "proposals.json"
+    snapshot = OUTPUT / f"{prefix}proposals.json"
     existing: list[dict[str, str]] = []
     if snapshot.exists():
         try:
@@ -335,7 +336,7 @@ def merge_with_dashboard_snapshot(fresh: list[dict[str, str]]) -> list[dict[str,
     merged = {item.get("link"): item for item in [*existing, *fresh] if item.get("link")}
     expired = [item for item in merged.values() if is_expired(item)]
     if expired:
-        archive_file = OUTPUT / "previous_opportunities.json"
+        archive_file = OUTPUT / f"{prefix}previous_opportunities.json"
         try:
             archived = json.loads(archive_file.read_text(encoding="utf-8")).get("proposals", []) if archive_file.exists() else []
         except (json.JSONDecodeError, OSError):
@@ -348,9 +349,9 @@ def merge_with_dashboard_snapshot(fresh: list[dict[str, str]]) -> list[dict[str,
     return [item for item in merged.values() if not is_expired(item)]
 
 
-def sync_workflow(proposals: list[dict[str, str]]) -> dict[str, dict[str, str]]:
+def sync_workflow(proposals: list[dict[str, str]], prefix: str = "") -> dict[str, dict[str, str]]:
     """Create persistent review tasks for newly discovered proposals."""
-    state = load_workflow_state()
+    state = load_workflow_state(prefix)
     today = date.today()
     for item in proposals:
         proposal_key = item_id(item)
@@ -363,7 +364,7 @@ def sync_workflow(proposals: list[dict[str, str]]) -> dict[str, dict[str, str]]:
         task["title"] = item["name"]
         task["link"] = item["link"]
         task["last_seen"] = today.isoformat()
-    atomic_json_write(WORKFLOW_STATE_FILE, state)
+    atomic_json_write(OUTPUT / f"{prefix}proposal_workflow_state.json", state)
     return state
 
 
@@ -429,7 +430,7 @@ def export(proposals: list[dict[str, str]], output: Path, workflow_state: dict[s
     book.save(output)
 
 
-def write_dashboard_results(proposals: list[dict[str, str]], workflow_state: dict[str, dict[str, str]]) -> None:
+def write_dashboard_results(proposals: list[dict[str, str]], workflow_state: dict[str, dict[str, str]], prefix: str = "") -> None:
     """Write the compact result snapshot consumed by the web dashboard."""
     rows = []
     for proposal in proposals:
@@ -450,7 +451,7 @@ def write_dashboard_results(proposals: list[dict[str, str]], workflow_state: dic
             "owner": task.get("owner", "Project team"),
             "review_due_date": task.get("review_due_date", ""),
         })
-    atomic_json_write(OUTPUT / "proposals.json", {
+    atomic_json_write(OUTPUT / f"{prefix}proposals.json", {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "count": len(rows),
         "proposals": rows,

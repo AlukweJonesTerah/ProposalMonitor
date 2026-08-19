@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 
+import { PROPOSAL_MONITOR_BRAND } from '@/lib/brand';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -10,17 +11,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-export default function OpportunityBrowser({ highOnly = false }) {
+export default function OpportunityBrowser({ brand = PROPOSAL_MONITOR_BRAND, highOnly = false }) {
   const [all, setAll] = useState(null);
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('');
   const [priority, setPriority] = useState(highOnly ? 'High' : '');
 
   useEffect(() => {
-    fetch('/api/results', { cache: 'no-store' })
+    fetch(`${brand.apiBase}/results`, { cache: 'no-store' })
       .then((response) => response.json())
       .then((results) => setAll(results.proposals || []));
-  }, []);
+  }, [brand.apiBase]);
 
   const items = useMemo(() => {
     if (!all) return [];
@@ -92,7 +93,7 @@ export default function OpportunityBrowser({ highOnly = false }) {
                 <Badge variant="muted" className="mb-2">{item.category} · {item.relevance_score}</Badge>
                 <h2 className="font-serif text-xl font-bold leading-snug">{item.name}</h2>
                 <p className="mt-1.5 text-sm text-muted-foreground">{item.source} · Due {item.due_date}{item.keywords ? ` · Keywords: ${item.keywords}` : ''}</p>
-                <Link href={`/opportunities/${item.id}`} className="mt-3 inline-block text-sm font-bold text-primary no-underline hover:underline">Read full summary →</Link>
+                <Link href={`${brand.basePath}/opportunities/${item.id}`} className="mt-3 inline-block text-sm font-bold text-primary no-underline hover:underline">Read full summary →</Link>
               </CardContent>
             </Card>
           ))}

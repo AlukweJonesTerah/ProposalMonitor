@@ -37,6 +37,46 @@
 
     --radius: 0.6rem;
   }
+
+  /* Pathways Technologies: a separately branded tenant sharing this codebase
+     (its own source list and data, see src/lib/brand.js). Colors are taken
+     directly from pathwaystechnologies.com's own stylesheet (#1863DC / #EC8425),
+     not approximated from the logo. --brand-teal is reused as this tenant's
+     secondary accent (rendered orange here) rather than introducing a second
+     token name, since every component already reads that color through a
+     CSS variable. */
+  [data-brand='pathways'] {
+    --background: 210 20% 98%;
+    --foreground: 0 0% 13%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 13%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 13%;
+
+    --primary: 217 80% 48%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 20% 94%;
+    --secondary-foreground: 217 40% 25%;
+
+    --muted: 210 20% 94%;
+    --muted-foreground: 0 0% 40%;
+
+    --accent: 217 90% 96%;
+    --accent-foreground: 217 80% 30%;
+
+    --destructive: 0 71% 58%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 90%;
+    --input: 0 0% 88%;
+    --ring: 217 80% 48%;
+
+    --brand-teal: 29 84% 54%;
+    --brand-gold: 43 77% 61%;
+  }
 }
 
 @layer base {

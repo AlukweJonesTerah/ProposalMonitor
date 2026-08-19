@@ -1,0 +1,19 @@
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
+
+import SiteHeader from '@/components/site-header';
+import OpportunityBrowser from '@/components/opportunity-browser';
+import { PROPOSAL_MONITOR_BRAND } from '@/lib/brand';
+
+export default function OpportunitiesListPage({ brand = PROPOSAL_MONITOR_BRAND, active, title, highOnly = false }) {
+  return (
+    <>
+      <SiteHeader active={active} brand={brand} />
+      <main className="container max-w-[1040px] py-10">
+        <Link href={brand.basePath || '/'} className="inline-flex items-center gap-1.5 text-sm font-medium text-primary no-underline hover:underline"><ArrowLeft className="h-4 w-4" />Back to dashboard</Link>
+        <h1 className="mt-4 font-serif text-4xl font-bold tracking-tight">{title}</h1>
+        <OpportunityBrowser brand={brand} highOnly={highOnly} />
+      </main>
+    </>
+  );
+}

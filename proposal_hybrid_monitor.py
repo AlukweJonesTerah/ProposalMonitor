@@ -190,16 +190,7 @@ def gemini(candidates: list[dict], keywords: list[str]) -> list[dict]:
     return rows
 
 
-def run_monitor() -> int:
-    parser = argparse.ArgumentParser(description="Run the hybrid proposal pipeline.")
-    parser.add_argument("--config", type=Path, default=Path(os.getenv("PROPOSAL_SOURCE_CONFIG", ROOT / "Migrations" / "proposal_source.json")))
-    parser.add_argument("--output", type=Path, default=OUTPUT / "proposals.xlsx")
-    parser.add_argument("--classification-mode", choices=("auto", "gemini", "deterministic"), default="auto")
-    parser.add_argument("--ai-limit", type=int, default=int(os.getenv("AI_CLASSIFICATION_LIMIT", "30")))
-    parser.add_argument("--mygov-alert", action="store_true")
-    parser.add_argument("--scheduled-alert", action="store_true", help="Email all current high- and medium-priority proposals.")
-    parser.add_argument("--skip-supabase", action="store_true")
-    args = parser.parse_args()
+def run_monitor(args) -> int:
     load_dotenv(ROOT / ".env")
     config = json.loads(args.config.read_text(encoding="utf-8-sig"))
     sources = active_sources(config)
@@ -248,14 +239,14 @@ def run_monitor() -> int:
             store = None
     proposals = [{"name": r["name"], "category": r["category"], "link": r["link"], "due_date": r["due_date"], "source": r["source"], "keywords": ", ".join(r["keywords"]), "relevance_score": r["relevance_score"], "match_reason": r["match_reason"], "eligibility_notes": r["eligibility_notes"], "recommended_action": r["recommended_action"]} for r in classified if r["is_relevant"]]
     expired = [item for item in proposals if is_expired(item)]
-    proposals = merge_with_dashboard_snapshot(proposals)
-    workflow_state = sync_workflow(proposals)
+    proposals = merge_with_dashboard_snapshot(proposals, prefix=args.prefix)
+    workflow_state = sync_workflow(proposals, prefix=args.prefix)
     export(proposals, args.output, workflow_state, config.get("sources"), config.get("keywords"))
-    write_dashboard_results(proposals, workflow_state)
+    write_dashboard_results(proposals, workflow_state, prefix=args.prefix)
     if store: store.finish(run_id, len(candidates), len(classified), len(proposals))
     print(f"Saved {len(proposals)} active validated proposal(s) from {len(classified)} classification(s) to {args.output}; excluded {len(expired)} expired item(s).")
     if args.mygov_alert:
-        state = OUTPUT / "mygov_seen.json"; seen = set(json.loads(state.read_text()) if state.exists() else [])
+        state = OUTPUT / f"{args.prefix}mygov_seen.json"; seen = set(json.loads(state.read_text()) if state.exists() else [])
         new = [p for p in proposals if p["source"].lower().startswith("mygov") and item_id(p) not in seen]
         if new and email_alert(new): state.write_text(json.dumps(sorted(seen | {item_id(p) for p in new}), indent=2))
         elif not new: print("No new myGov matches.")
@@ -271,7 +262,21 @@ def run_monitor() -> int:
 
 def main() -> int:
     """Prevent the scheduled and Tuesday/Thursday jobs from writing together."""
-    lock_file = OUTPUT / ".monitor.lock"
+    parser = argparse.ArgumentParser(description="Run the hybrid proposal pipeline.")
+    parser.add_argument("--config", type=Path, default=Path(os.getenv("PROPOSAL_SOURCE_CONFIG", ROOT / "Migrations" / "proposal_source.json")))
+    parser.add_argument("--output", type=Path, default=OUTPUT / "proposals.xlsx")
+    parser.add_argument("--classification-mode", choices=("auto", "gemini", "deterministic"), default="auto")
+    parser.add_argument("--ai-limit", type=int, default=int(os.getenv("AI_CLASSIFICATION_LIMIT", "30")))
+    parser.add_argument("--mygov-alert", action="store_true")
+    parser.add_argument("--scheduled-alert", action="store_true", help="Email all current high- and medium-priority proposals.")
+    parser.add_argument("--skip-supabase", action="store_true")
+    # Distinguishes a separately-branded tenant's (e.g. Pathways Technologies)
+    # snapshot/workbook/lock files from ProposalMonitor's own, so two pipelines
+    # sharing this codebase never read or overwrite each other's output.
+    parser.add_argument("--prefix", default="", help='File prefix for this tenant\'s output, e.g. "pathways_".')
+    args = parser.parse_args()
+
+    lock_file = OUTPUT / f"{args.prefix}.monitor.lock"
     OUTPUT.mkdir(exist_ok=True)
     try:
         if lock_file.exists() and time.time() - lock_file.stat().st_mtime > int(os.getenv("MONITOR_LOCK_MAX_AGE_SECONDS", "14400")):
@@ -284,7 +289,7 @@ def main() -> int:
         return 75
     try:
         os.write(descriptor, str(os.getpid()).encode())
-        return run_monitor()
+        return run_monitor(args)
     finally:
         os.close(descriptor)
         try: lock_file.unlink()

@@ -9,3 +9,6 @@ __pycache__/
 proposal_output/proposal_source.json
 proposal_output/pending_source_intake.json
 proposal_output/.monitor.lock
+proposal_output/pathways_proposal_source.json
+proposal_output/pathways_pending_source_intake.json
+proposal_output/pathways_.monitor.lock
