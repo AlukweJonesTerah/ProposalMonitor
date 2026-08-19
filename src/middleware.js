@@ -11,9 +11,14 @@ function clientAddress(request) {
 }
 
 function limitFor(pathname, method) {
-  if (pathname === '/api/analyse') return { limit: 8, window: WINDOW_MS };
-  if (pathname === '/api/sources' && method !== 'GET') return { limit: 20, window: WINDOW_MS };
-  if (pathname === '/api/download') return { limit: 20, window: WINDOW_MS };
+  // Every tenant (e.g. /api/pathways/analyse) exposes the same route shapes as
+  // ProposalMonitor's own (/api/analyse) and needs the same limits - without
+  // this, a prefixed tenant's routes would silently fall through to the much
+  // more permissive default below, including the paid Gemini call in analyse.
+  const normalised = pathname.replace(/^\/api\/[a-z0-9-]+\//, '/api/');
+  if (normalised === '/api/analyse') return { limit: 8, window: WINDOW_MS };
+  if (normalised === '/api/sources' && method !== 'GET') return { limit: 20, window: WINDOW_MS };
+  if (normalised === '/api/download') return { limit: 20, window: WINDOW_MS };
   if (pathname === '/api/health') return { limit: 30, window: 60 * 1000 };
   return { limit: 120, window: 60 * 1000 };
 }
