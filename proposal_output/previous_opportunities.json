@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-19T06:12:47.118780+00:00",
+  "generated_at": "2026-08-19T06:24:32.017250+00:00",
   "count": 5,
   "proposals": [
     {
@@ -42,17 +42,17 @@
       "archived_at": "2026-08-19T06:02:28.938825+00:00"
     },
     {
-      "name": "Climate Change AI Innovation Grants 2024",
+      "name": "Call for Proposals: Climate Change AI Innovation Grants 2024",
       "category": "Digital Health & Climate Tech",
       "link": "https://www.climatechange.ai/calls/innovation_grants_2024",
       "due_date": "2024-09-15",
       "source": "climatechange.ai",
-      "keywords": "artificial intelligence, machine learning, data science, grant application, funding opportunity",
+      "keywords": "artificial intelligence, machine learning, funding opportunity, grant application",
       "relevance_score": "High",
-      "match_reason": "High-value grant program explicitly funding projects at the intersection of artificial intelligence, machine learning, and climate change.",
-      "eligibility_notes": "Principal Investigator must be affiliated with an accredited university in one of the 38 OECD Member Countries. Co-Investigators can be from any country.",
-      "recommended_action": "Review",
-      "archived_at": "2026-08-19T06:12:47.118780+00:00"
+      "match_reason": "This is a genuine funding opportunity/grant application specifically targeting projects at the intersection of AI, machine learning, and climate change.",
+      "eligibility_notes": "The Principal Investigator must be affiliated with an accredited university in one of the 38 OECD Member Countries. Co-Investigators can be located globally and can be affiliated with non-research institutions.",
+      "recommended_action": "Pursue",
+      "archived_at": "2026-08-19T06:24:32.017250+00:00"
     },
     {
       "name": "Kenya Reinsurance Corporation Limited - Supply and installation of agentic AI automation system with Robotic Process Automation (RPA) integration",
