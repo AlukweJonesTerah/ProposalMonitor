@@ -53,6 +53,12 @@ def main() -> None:
         # Public discovery is opt-in because it consumes the configured search/API budget.
         if enabled("ENABLE_PUBLIC_WEB_DISCOVERY"):
             run("proposal_research_agent.py")
+            run(
+                "proposal_research_agent.py",
+                "--config", str(pathways_config()),
+                "--output", str(ROOT / "proposal_output" / "pathways_proposals.xlsx"),
+                "--prefix", "pathways_",
+            )
         print(f"Next proposal monitor run in {interval // 60} minute(s).", flush=True)
         time.sleep(interval)
 

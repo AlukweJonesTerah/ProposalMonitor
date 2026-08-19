@@ -155,6 +155,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Discover proposal opportunities with Firecrawl and Gemini.")
     parser.add_argument("--config", type=Path, default=Path(os.getenv("PROPOSAL_SOURCE_CONFIG", ROOT / "Migrations" / "proposal_source.json")))
     parser.add_argument("--output", type=Path, default=OUTPUT / "proposals.xlsx")
+    # Distinguishes a separately-branded tenant's (e.g. Pathways Technologies)
+    # snapshot/workbook/workflow-state files from ProposalMonitor's own, so
+    # this agent's results merge into the correct tenant instead of always
+    # landing in ProposalMonitor's regardless of which --config was passed.
+    parser.add_argument("--prefix", default="", help='File prefix for this tenant\'s output, e.g. "pathways_".')
     args = parser.parse_args()
     load_dotenv(ROOT / ".env")
     require("GEMINI_API_KEY")
@@ -185,10 +190,15 @@ def main() -> int:
     pages = list({page["url"]: page for page in pages}.values())
     proposals = extract_opportunities(pages, config["keywords"]) if pages else []
     expired = [item for item in proposals if is_expired(item)]
-    combined = merge_with_dashboard_snapshot(proposals)
-    workflow_state = sync_workflow(combined)
-    export(combined, args.output, workflow_state, config.get("sources"), config.get("keywords"))
-    write_dashboard_results(combined, workflow_state)
+    combined = merge_with_dashboard_snapshot(proposals, prefix=args.prefix)
+    workflow_state = sync_workflow(combined, prefix=args.prefix)
+    export(
+        combined, args.output, workflow_state, config.get("sources"), config.get("keywords"),
+        prefix=args.prefix,
+        owner="Olivia" if not args.prefix else "Project owner",
+        mygov_alert_enabled=not args.prefix,
+    )
+    write_dashboard_results(combined, workflow_state, prefix=args.prefix)
     print(f"Saved {len(combined)} active proposal(s), including {len(proposals)} AI-researched result(s), to {args.output}; excluded {len(expired)} expired item(s).")
     return 0
 

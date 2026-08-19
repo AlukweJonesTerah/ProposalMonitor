@@ -36,11 +36,6 @@ logging.getLogger("pypdf").setLevel(logging.ERROR)
 
 ROOT = Path(__file__).resolve().parent
 OUTPUT = ROOT / "proposal_output"
-WORKFLOW_STATE_FILE = OUTPUT / "proposal_workflow_state.json"
-# The live, editable copy the website reads and writes (src/lib/source-handlers.js),
-# not Migrations/pending_source_intake.json, which is only the seed template
-# copied there once on first boot and never updated after that.
-PENDING_SOURCE_FILE = OUTPUT / "pending_source_intake.json"
 DISCOVERY_TERMS = ("tender", "proposal", "rfp", "consultancy", "procurement", "grant", "funding", "certification", "certification offer", "paper proposal", "call for papers")
 ICT_TERMS = ("ict", "information technology", "technology", "digital", "software", "computer", "data", "analytics", "artificial intelligence", "machine learning", "cyber", "cloud", "network", "blockchain", "automation", "systems development")
 REQUEST_INTERVAL_SECONDS = 1.5
@@ -593,16 +588,19 @@ def main() -> int:
     parser.add_argument("--output", type=Path, default=OUTPUT / "proposals.xlsx")
     parser.add_argument("--mygov-alert", action="store_true")
     parser.add_argument("--set-workflow", nargs=3, metavar=("TRACKER_ID", "STATUS", "OWNER"), help="Update a review task, for example: --set-workflow abc123 Reviewing Olivia")
+    # Distinguishes a separately-branded tenant's (e.g. Pathways Technologies)
+    # snapshot/workbook/workflow-state files from ProposalMonitor's own.
+    parser.add_argument("--prefix", default="", help='File prefix for this tenant\'s output, e.g. "pathways_".')
     args = parser.parse_args()
     load_dotenv(ROOT / ".env")
     if args.set_workflow:
         tracker_id, status, owner = args.set_workflow
-        state = load_workflow_state()
+        state = load_workflow_state(args.prefix)
         if tracker_id not in state:
             raise SystemExit(f"Unknown tracker ID: {tracker_id}")
         state[tracker_id]["status"] = status
         state[tracker_id]["owner"] = owner
-        WORKFLOW_STATE_FILE.write_text(json.dumps(state, indent=2), encoding="utf-8")
+        (OUTPUT / f"{args.prefix}proposal_workflow_state.json").write_text(json.dumps(state, indent=2), encoding="utf-8")
         print(f"Updated {tracker_id}: {status} ({owner})")
         return 0
     config = json.loads(args.config.read_text(encoding="utf-8-sig"))
@@ -614,13 +612,18 @@ def main() -> int:
         found = [item for source in sources for item in collect(session, source, config["keywords"])]
     proposals = list({item["link"]: item for item in found}.values())
     expired = [item for item in proposals if is_expired(item)]
-    proposals = merge_with_dashboard_snapshot(proposals)
-    workflow_state = sync_workflow(proposals)
-    export(proposals, args.output, workflow_state, config.get("sources"), config.get("keywords"))
-    write_dashboard_results(proposals, workflow_state)
+    proposals = merge_with_dashboard_snapshot(proposals, prefix=args.prefix)
+    workflow_state = sync_workflow(proposals, prefix=args.prefix)
+    export(
+        proposals, args.output, workflow_state, config.get("sources"), config.get("keywords"),
+        prefix=args.prefix,
+        owner="Olivia" if not args.prefix else "Project owner",
+        mygov_alert_enabled=not args.prefix,
+    )
+    write_dashboard_results(proposals, workflow_state, prefix=args.prefix)
     print(f"Saved {len(proposals)} active matching proposal(s) to {args.output}; excluded {len(expired)} expired item(s).")
     if args.mygov_alert:
-        state = OUTPUT / "mygov_seen.json"
+        state = OUTPUT / f"{args.prefix}mygov_seen.json"
         seen = set(json.loads(state.read_text()) if state.exists() else [])
         new = [item for item in proposals if item["source"].lower().startswith("mygov") and item_id(item) not in seen]
         if new and email_alert(new):
