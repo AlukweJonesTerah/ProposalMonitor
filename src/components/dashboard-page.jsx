@@ -29,6 +29,7 @@ export default function DashboardPage({ brand = PROPOSAL_MONITOR_BRAND }) {
   const [analysisUrl, setAnalysisUrl] = useState('');
   const [analysis, setAnalysis] = useState(null);
   const [analysing, setAnalysing] = useState(false);
+  const [keywordsExpanded, setKeywordsExpanded] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -74,13 +75,27 @@ export default function DashboardPage({ brand = PROPOSAL_MONITOR_BRAND }) {
   const clearFilters = () => { setQuery(''); setCategoryFilter(''); setPriorityFilter(''); };
   const opportunityHref = (id) => `${brand.basePath}/opportunities/${id}`;
 
+  const keywords = data.keywords || [];
+  const KEYWORD_PREVIEW_COUNT = 5;
+  const hiddenKeywordCount = keywords.length - KEYWORD_PREVIEW_COUNT;
+  const visibleKeywords = keywordsExpanded || hiddenKeywordCount <= 0 ? keywords : keywords.slice(0, KEYWORD_PREVIEW_COUNT);
+
   return (
     <main className="flex min-h-screen flex-col">
       <SiteHeader active="dashboard" search={{ value: query, onChange: setQuery }} brand={brand} />
 
       <div className="flex flex-wrap items-center justify-center gap-2 border-b bg-accent/60 px-4 py-2.5 text-xs text-muted-foreground">
         <span>Monitoring for</span>
-        {(data.keywords || []).map((keyword) => <Badge key={keyword} variant="outline" className="bg-card font-medium text-primary">{keyword}</Badge>)}
+        {visibleKeywords.map((keyword) => <Badge key={keyword} variant="outline" className="bg-card font-medium text-primary">{keyword}</Badge>)}
+        {hiddenKeywordCount > 0 && (
+          <button
+            type="button"
+            onClick={() => setKeywordsExpanded((expanded) => !expanded)}
+            className="inline-flex items-center rounded-full border border-dashed border-primary/40 px-2.5 py-0.5 text-xs font-semibold text-primary transition-colors hover:bg-card"
+          >
+            {keywordsExpanded ? 'Show less' : `+${hiddenKeywordCount} more`}
+          </button>
+        )}
       </div>
 
       <div className="flex flex-wrap items-end justify-center gap-3 border-b bg-card px-4 py-3">
