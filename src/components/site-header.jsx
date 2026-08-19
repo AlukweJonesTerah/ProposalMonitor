@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Download, History, LayoutDashboard, ListChecks, Search, Send, ShieldCheck, Star } from 'lucide-react';
+import { CalendarClock, Download, History, LayoutDashboard, ListChecks, Search, Send, ShieldCheck, Star } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { PROPOSAL_MONITOR_BRAND } from '@/lib/brand';
@@ -67,6 +67,14 @@ export default function SiteHeader({ active = '', search, brand = PROPOSAL_MONIT
             {label}
           </Link>
         ))}
+        <a
+          href={`${brand.apiBase}/calendar`}
+          title="Subscribe in Google Calendar, Outlook, or Apple Calendar by pasting this link as a calendar subscription"
+          className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-3 py-2 text-sm font-medium text-muted-foreground no-underline transition-colors hover:bg-accent hover:text-accent-foreground md:px-4"
+        >
+          <CalendarClock className="h-4 w-4 shrink-0" />
+          Deadlines calendar
+        </a>
         <a
           href={`${brand.apiBase}/download`}
           className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-3 py-2 text-sm font-medium text-muted-foreground no-underline transition-colors hover:bg-accent hover:text-accent-foreground md:px-4"

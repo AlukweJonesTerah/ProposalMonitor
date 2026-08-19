@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { ArrowLeft, ArrowUpRight } from 'lucide-react';
+import { ArrowLeft, ArrowUpRight, CalendarPlus } from 'lucide-react';
 
 import SiteHeader from '@/components/site-header';
 import { PROPOSAL_MONITOR_BRAND } from '@/lib/brand';
@@ -59,9 +59,18 @@ export default function OpportunityDetailPage({ brand = PROPOSAL_MONITOR_BRAND, 
                 <li>Submit through the official portal or the instructions on the source page before the deadline.</li>
               </ol>
             </section>
-            <Button asChild className="mt-6">
-              <a href={opportunity.link} target="_blank" rel="noreferrer">Open official source and apply <ArrowUpRight className="h-4 w-4" /></a>
-            </Button>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Button asChild>
+                <a href={opportunity.link} target="_blank" rel="noreferrer">Open official source and apply <ArrowUpRight className="h-4 w-4" /></a>
+              </Button>
+              {opportunity.due_date && opportunity.due_date !== 'Not stated' && (
+                <Button asChild variant="outline">
+                  <a href={`${brand.apiBase}/calendar?id=${opportunity.id}`} title="Downloads a calendar file with the deadline and a 3-day-before reminder">
+                    <CalendarPlus className="h-4 w-4" />Add deadline to calendar
+                  </a>
+                </Button>
+              )}
+            </div>
           </CardContent>
         </Card>
 
