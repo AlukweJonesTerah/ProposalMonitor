@@ -1,26 +1,16 @@
 import { mkdir, readFile, writeFile } from 'fs/promises';
 import path from 'path';
-import { lookup } from 'dns/promises';
-import { isIP } from 'net';
 
 import { tenantPaths } from './tenant';
+import { assertPublicUrl } from './safe-url';
 
 // Shared across every tenant: it protects the one Gemini API quota/rate-limit
 // behind this server, regardless of which tenant's dashboard triggered the call.
 const maxConcurrentAnalyses = Number(process.env.MAX_CONCURRENT_ANALYSES || 2);
 let activeAnalyses = 0;
 
-function isPrivateAddress(address) {
-  return isIP(address) === 4 ? /^(10\.|127\.|0\.|169\.254\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(address) : ['::1'].includes(address) || address.toLowerCase().startsWith('fc') || address.toLowerCase().startsWith('fd') || address.toLowerCase().startsWith('fe80');
-}
-
 async function publicUrl(value) {
-  const url = new URL(String(value || '').trim());
-  const hostname = url.hostname.toLowerCase();
-  if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || ['localhost', '127.0.0.1', '::1'].includes(hostname) || hostname.endsWith('.local')) throw new Error('Enter a public http(s) URL without login details.');
-  const addresses = await lookup(url.hostname, { all: true });
-  if (!addresses.length || addresses.some(({ address }) => isPrivateAddress(address))) throw new Error('Private-network URLs cannot be analysed.');
-  return url;
+  return assertPublicUrl(value, 'analysed');
 }
 
 function pageText(html) { return html.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>|<[^>]+>/gi, ' ').replace(/\s+/g, ' ').trim().slice(0, 60000); }

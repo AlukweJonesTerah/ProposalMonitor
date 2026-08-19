@@ -5,11 +5,13 @@ from __future__ import annotations
 import argparse
 import hashlib
 from html import escape
+import ipaddress
 import json
 import logging
 import os
 import re
 import smtplib
+import socket
 import time
 from datetime import date, datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
@@ -144,12 +146,39 @@ def _request_headers() -> dict[str, str]:
     return {"User-Agent": os.getenv("SCRAPER_USER_AGENT", "ProposalMonitor/1.0 (+contact your technical owner)")}
 
 
+def _is_safe_url(url: str) -> bool:
+    """Reject anything but a plain public http(s) address.
+
+    This guards against server-side request forgery: a submitted source, or a
+    link merely *discovered* on an approved source's page (never reviewed by
+    a person), could point at internal infrastructure such as a cloud
+    metadata endpoint (169.254.169.254) or a localhost admin panel. Every
+    fetch validates the address it is actually about to connect to, not just
+    the hostname text, so IP-literal obfuscation (decimal/octal/hex forms)
+    is caught once it is resolved.
+    """
+    parsed = urlparse(url)
+    if parsed.scheme not in ("http", "https") or not parsed.hostname:
+        return False
+    try:
+        infos = socket.getaddrinfo(parsed.hostname, None)
+    except socket.gaierror:
+        return False
+    addresses = {info[4][0] for info in infos}
+    if not addresses:
+        return False
+    return all(ipaddress.ip_address(address).is_global for address in addresses)
+
+
 def _robots_policy(session: requests.Session, url: str) -> RobotFileParser | None:
     """Return a site's robots policy when it is available; cache it per origin."""
     origin = _origin(url)
     if origin in _robots_cache:
         return _robots_cache[origin]
     robots_url = f"{origin}/robots.txt"
+    if not _is_safe_url(robots_url):
+        _robots_cache[origin] = None
+        return None
     try:
         response = session.get(robots_url, timeout=15, headers=_request_headers())
         if not response.ok:
@@ -175,27 +204,47 @@ def _pace(origin: str) -> None:
     _next_request_at[origin] = time.monotonic() + interval
 
 
-def fetch(session: requests.Session, url: str) -> tuple[str, str]:
-    """Fetch a public page politely; do not bypass robots rules or access controls."""
-    origin = _origin(url)
-    policy = _robots_policy(session, url)
-    user_agent = _request_headers()["User-Agent"]
-    if policy and not policy.can_fetch(user_agent, url):
-        raise requests.exceptions.RequestException(f"robots.txt disallows this crawler: {url}")
+MAX_REDIRECTS = 5
 
+
+def fetch(session: requests.Session, url: str) -> tuple[str, str]:
+    """Fetch a public page politely; do not bypass robots rules or access controls.
+
+    Redirects are followed manually (not via requests' allow_redirects) so
+    each hop is re-validated by _is_safe_url before it is followed: a page
+    at an approved, safe address could still redirect to an internal one.
+    """
     response = None
-    for attempt in range(MAX_FETCH_ATTEMPTS):
-        _pace(origin)
-        response = session.get(url, timeout=30, headers=_request_headers())
-        if response.status_code not in (429, 500, 502, 503, 504) or attempt == MAX_FETCH_ATTEMPTS - 1:
-            break
-        retry_after = response.headers.get("Retry-After")
-        try:
-            delay = min(60.0, max(1.0, float(retry_after))) if retry_after else 2.0 * (attempt + 1)
-        except ValueError:
-            delay = 2.0 * (attempt + 1)
-        print(f"Temporary response {response.status_code} from {origin}; waiting {delay:g}s before retrying.")
-        time.sleep(delay)
+    for _ in range(MAX_REDIRECTS + 1):
+        if not _is_safe_url(url):
+            raise requests.exceptions.RequestException(f"Refusing to fetch a non-public address: {url}")
+        origin = _origin(url)
+        policy = _robots_policy(session, url)
+        user_agent = _request_headers()["User-Agent"]
+        if policy and not policy.can_fetch(user_agent, url):
+            raise requests.exceptions.RequestException(f"robots.txt disallows this crawler: {url}")
+
+        for attempt in range(MAX_FETCH_ATTEMPTS):
+            _pace(origin)
+            response = session.get(url, timeout=30, headers=_request_headers(), allow_redirects=False)
+            if response.status_code not in (429, 500, 502, 503, 504) or attempt == MAX_FETCH_ATTEMPTS - 1:
+                break
+            retry_after = response.headers.get("Retry-After")
+            try:
+                delay = min(60.0, max(1.0, float(retry_after))) if retry_after else 2.0 * (attempt + 1)
+            except ValueError:
+                delay = 2.0 * (attempt + 1)
+            print(f"Temporary response {response.status_code} from {origin}; waiting {delay:g}s before retrying.")
+            time.sleep(delay)
+        if response.is_redirect:
+            location = response.headers.get("Location")
+            if not location:
+                break
+            url = urljoin(url, location)
+            continue
+        break
+    else:
+        raise requests.exceptions.RequestException(f"Too many redirects while fetching {url}")
     assert response is not None
     response.raise_for_status()
     content_type = response.headers.get("content-type", "").lower()

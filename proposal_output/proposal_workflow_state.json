@@ -393,7 +393,7 @@
     "review_due_date": "2026-08-17",
     "title": "Open University of Kenya Tender Notice",
     "link": "https://gaa.go.ke/sites/default/files/2026-08/%20Open%20University%20of%20Kenya%20Tender%20Notice.pdf",
-    "last_seen": "2026-08-13"
+    "last_seen": "2026-08-19"
   },
   "b7daa40b597838c6": {
     "status": "Review required",
@@ -456,6 +456,15 @@
     "review_due_date": "2026-08-19",
     "title": "Open University of Kenya Prequalification and Tender Notice",
     "link": "https://gaa.go.ke/sites/default/files/2026-08/%20Open%20University%20of%20Kenya%20Tender%20Notice.pdf",
+    "last_seen": "2026-08-19"
+  },
+  "60c52eb38ad60cf3": {
+    "status": "Review required",
+    "owner": "Project team",
+    "first_seen": "2026-08-19",
+    "review_due_date": "2026-08-21",
+    "title": "Climate Change AI Innovation Grantees Announcement",
+    "link": "https://www.climatechange.ai/press_releases/2026-04-29/release",
     "last_seen": "2026-08-19"
   }
 }

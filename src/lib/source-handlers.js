@@ -1,9 +1,8 @@
 import { mkdir, readFile, writeFile } from 'fs/promises';
 import path from 'path';
-import { lookup } from 'dns/promises';
-import { isIP } from 'net';
 
 import { tenantPaths } from './tenant';
+import { assertPublicUrl } from './safe-url';
 
 async function ensureEditableFile(file, template, fallback) {
   try { return await readFile(file, 'utf8'); }
@@ -17,20 +16,8 @@ async function ensureEditableFile(file, template, fallback) {
   }
 }
 
-function isPrivateAddress(address) {
-  if (isIP(address) === 4) return /^(10\.|127\.|0\.|169\.254\.|192\.168\.|100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\.|172\.(1[6-9]|2\d|3[01])\.)/.test(address);
-  const normalised = address.toLowerCase();
-  return normalised === '::1' || normalised.startsWith('fc') || normalised.startsWith('fd') || normalised.startsWith('fe80');
-}
-
 async function safePublicUrl(value) {
-  const url = new URL(value);
-  const hostname = url.hostname.toLowerCase();
-  if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) throw new Error(`Enter a public http(s) URL without login details: ${value}`);
-  if (['localhost', '127.0.0.1', '::1'].includes(hostname) || hostname.endsWith('.local')) throw new Error(`Private-network URLs cannot be submitted: ${value}`);
-  const addresses = await lookup(url.hostname, { all: true });
-  if (!addresses.length || addresses.some(({ address }) => isPrivateAddress(address))) throw new Error(`Private-network URLs cannot be submitted: ${value}`);
-  return url.href;
+  return (await assertPublicUrl(value, 'submitted')).href;
 }
 
 async function parseUrls(value) {
