@@ -1,6 +1,17 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
+
+import SiteHeader from '@/components/site-header';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 
 const categories = ['Analytics', 'Data science', 'Training', 'Grant', 'Certification', 'Paper proposal', 'Digital Health & Climate Tech', 'Youth, Women & Inclusion', 'Other'];
 const fmt = (value) => value && value !== 'Not stated' ? new Date(`${value}T00:00:00`).toLocaleDateString() : 'Not stated';
@@ -61,42 +72,216 @@ export default function Dashboard() {
 
   const clearFilters = () => { setQuery(''); setCategoryFilter(''); setPriorityFilter(''); };
 
-  return <main>
-    <header>
-      <div className="mast">
-        <a className="logo" href="#dashboard"><span>PM</span><b>ProposalMonitor</b><small>Find the right opportunity. Move with confidence.</small></a>
-        <label className="search"><span className="srOnly">Search opportunities</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search opportunities, sources, or categories..." /></label>
-        <a className="sources" href="/sources/review">Source review</a>
+  return (
+    <main className="flex min-h-screen flex-col">
+      <SiteHeader active="dashboard" search={{ value: query, onChange: setQuery }} />
+
+      <div className="flex flex-wrap items-center justify-center gap-2 border-b bg-accent/60 px-4 py-2.5 text-xs text-muted-foreground">
+        <span>Monitoring for</span>
+        {(data.keywords || []).map((keyword) => <Badge key={keyword} variant="outline" className="bg-card font-medium text-primary">{keyword}</Badge>)}
       </div>
-      <nav><a className="active" href="/">Dashboard</a><a href="/opportunities">Opportunities</a><a href="/opportunities/high-priority">High priority</a><a href="/opportunities/history">Previous opportunities</a><a href="/sources/intake">Source intake</a><a href="/api/download">Download Excel</a></nav>
-    </header>
 
-    <div className="keywordStrip"><span>Monitoring for</span>{(data.keywords || []).map((keyword) => <b key={keyword}>{keyword}</b>)}</div>
-    <div className="filterBar">
-      <label>Find an opportunity <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search name, category, source, or keyword" /></label>
-      <label>Category <select value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value)}><option value="">All categories</option>{categories.map((category) => <option key={category}>{category}</option>)}</select></label>
-      <label>Priority <select value={priorityFilter} onChange={(event) => setPriorityFilter(event.target.value)}><option value="">All priorities</option><option>High</option><option>Medium</option><option>Low</option></select></label>
-      <button disabled={!query && !categoryFilter && !priorityFilter} onClick={clearFilters}>Clear filters</button><span>{items.length} result{items.length === 1 ? '' : 's'}</span>
-    </div>
+      <div className="flex flex-wrap items-end justify-center gap-3 border-b bg-card px-4 py-3">
+        <div className="grid gap-1.5">
+          <Label htmlFor="find-opportunity">Find an opportunity</Label>
+          <Input id="find-opportunity" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search name, category, source, or keyword" className="min-w-[260px]" />
+        </div>
+        <div className="grid gap-1.5">
+          <Label>Category</Label>
+          <Select value={categoryFilter || 'all'} onValueChange={(value) => setCategoryFilter(value === 'all' ? '' : value)}>
+            <SelectTrigger className="min-w-[180px]"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All categories</SelectItem>
+              {categories.map((category) => <SelectItem key={category} value={category}>{category}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="grid gap-1.5">
+          <Label>Priority</Label>
+          <Select value={priorityFilter || 'all'} onValueChange={(value) => setPriorityFilter(value === 'all' ? '' : value)}>
+            <SelectTrigger className="min-w-[150px]"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All priorities</SelectItem>
+              <SelectItem value="High">High</SelectItem>
+              <SelectItem value="Medium">Medium</SelectItem>
+              <SelectItem value="Low">Low</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <Button variant="outline" disabled={!query && !categoryFilter && !priorityFilter} onClick={clearFilters}>Clear filters</Button>
+        <span className="pb-2 text-xs text-muted-foreground">{items.length} result{items.length === 1 ? '' : 's'}</span>
+      </div>
 
-    <div className="wrap" id="dashboard">
-      <section className="main">
-        <div className="lead">
-          {lead ? <>
-            <div className="leadText"><p><em>LEAD OPPORTUNITY</em> Updated {data.generated_at ? new Date(data.generated_at).toLocaleDateString() : 'today'}</p><h1>{lead.name}</h1><small>{lead.source} · {lead.category}</small><a className="readMore" href={`/opportunities/${lead.id}`}>Read full summary</a></div>
-            <div className="covered"><label>OPPORTUNITY DETAILS</label><b>{lead.recommended_action || 'Review'}</b><p><strong>Deadline</strong>{fmt(lead.due_date)}</p><p><strong>Priority</strong>{lead.relevance_score || 'Unscored'}</p><p>{lead.match_reason || 'Open the opportunity to review its requirements and eligibility.'}</p><a className="proposalRedirect" href={lead.link} target="_blank" rel="noreferrer">View official proposal →</a></div>
-          </> : <div className="blank"><h1>No opportunities match these filters</h1><p>Try another category or priority, or clear the filters to view every available opportunity.</p></div>}
-        </div>
-        <div className="lower">
-          <section className="other" id="opportunities"><h2>Other opportunities <span>{items.length > 1 ? `${items.length - 1} more` : ''}</span></h2>{items.slice(1, 4).map((proposal) => <a className="mini" href={`/opportunities/${proposal.id}`} key={proposal.id}><label>{proposal.category}</label><b>{proposal.name}</b><small>{proposal.source} · Due {fmt(proposal.due_date)}</small></a>)}</section>
-          <section className="ops"><article><label>LIVE PIPELINE</label><div><b>{data.count}</b><span>Matches<br />identified</span><b>{high}</b><span>High<br />priority</span></div></article><article><label>MONITOR STATUS</label><p><i></i>{loading ? 'Refreshing latest results' : 'Ready for review'}</p><small>{data.generated_at ? `Last updated ${new Date(data.generated_at).toLocaleString()}` : 'No result snapshot yet'}</small><button onClick={load}>Refresh dashboard</button></article></section>
-        </div>
-        <div className="actionRow">
-          <section className="intake" id="intake"><div><label>RECURRING MONITORING</label><h2>Suggest a proposal website</h2><p>Add a tender, donor, or ministry portal for the team to review. Approved websites are checked in future monitor runs.</p></div><form onSubmit={submitSources}><textarea value={urls} onChange={(event) => setUrls(event.target.value)} placeholder={'https://example.gov/tenders\nhttps://example.org/funding'} required /><button disabled={saving}>{saving ? 'Submitting…' : 'Submit sources'}</button>{notice && <small>{notice}</small>}</form></section>
-          <section className="intake analyzer"><div><label>ONE-OFF ANALYSIS</label><h2>Analyse an opportunity now</h2><p>Paste one public opportunity page for an immediate relevance score, eligibility notes, and deadline. It will not be added to recurring monitoring.</p></div><form onSubmit={analyse}><input type="url" value={analysisUrl} onChange={(event) => setAnalysisUrl(event.target.value)} placeholder="https://example.org/opportunity" required /><button disabled={analysing}>{analysing ? 'Analysing…' : 'Analyse URL'}</button>{analysis && <small className={analysis.error ? 'error' : analysis.warning ? 'warning' : ''}>{analysis.error || `${analysis.title || 'Opportunity'} — ${analysis.recommended_action || 'Review'} · Due ${analysis.due_date || 'Not stated'}${analysis.warning ? ` — ${analysis.warning}` : ''}`}{analysis.blockedUrl && <> <a className="blockedSourceLink" href={analysis.blockedUrl} target="_blank" rel="noreferrer">Open official page ↗</a></>}</small>}</form></section>
-        </div>
-      </section>
-      <aside><section className="rail"><h2>OPPORTUNITY ANALYSIS</h2><b className="big">{data.count}</b><p>Total Matches</p><div className="bar"><label>High priority <span>{high}</span></label><b><i className="red" style={{ width: `${data.count ? high / data.count * 100 : 0}%` }} /></b></div><div className="bar"><label>Review queue <span>{Math.max(data.count - high, 0)}</span></label><b><i className="teal" style={{ width: `${data.count ? Math.max(data.count - high, 0) / data.count * 100 : 0}%` }} /></b></div></section><section className="rail trending"><h2>PRIORITY QUEUE</h2>{items.slice(0, 5).map((proposal, index) => <a href={`/opportunities/${proposal.id}`} key={proposal.id}><strong>{index + 1}</strong><span>{proposal.name}<small>{proposal.source}</small></span></a>)}</section></aside>
-    </div>
-  </main>;
+      <div className="container grid flex-1 grid-cols-1 gap-6 py-6 lg:grid-cols-[minmax(0,3fr)_294px]" id="dashboard">
+        <section className="flex flex-col gap-6">
+          <Card className="overflow-hidden">
+            {lead ? (
+              <div className="grid md:grid-cols-2">
+                <div className="flex min-w-0 flex-col p-6 md:p-8">
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                    <Badge variant="destructive" className="shrink-0 uppercase tracking-wide">High priority summary</Badge>
+                    <span className="whitespace-nowrap">Updated {data.generated_at ? new Date(data.generated_at).toLocaleDateString() : 'today'}</span>
+                  </div>
+                  <h1 className="my-4 line-clamp-5 font-serif text-[29px] font-bold leading-tight tracking-tight md:text-4xl">{lead.name}</h1>
+                  <small className="mt-auto text-xs text-muted-foreground">{lead.source} · {lead.category}</small>
+                  <Button asChild variant="outline" className="mt-4 self-start">
+                    <Link href={`/opportunities/${lead.id}`}>Read full summary</Link>
+                  </Button>
+                </div>
+                <div className="flex flex-col bg-accent p-6 md:p-8">
+                  <Label>Opportunity details</Label>
+                  <b className="my-4 font-serif text-[26px] md:text-[30px]">{lead.recommended_action || 'Review'}</b>
+                  <div className="border-t pt-2.5">
+                    <span className="block text-xs font-semibold text-foreground">Deadline</span>
+                    <span className="text-sm text-muted-foreground">{fmt(lead.due_date)}</span>
+                  </div>
+                  <div className="mt-2.5 border-t pt-2.5">
+                    <span className="block text-xs font-semibold text-foreground">Priority</span>
+                    <span className="text-sm text-muted-foreground">{lead.relevance_score || 'Unscored'}</span>
+                  </div>
+                  <p className="mt-4 rounded-lg bg-card p-3 text-sm leading-relaxed text-muted-foreground">{lead.match_reason || 'Open the opportunity to review its requirements and eligibility.'}</p>
+                  <Button asChild className="mt-4 self-start">
+                    <a href={lead.link} target="_blank" rel="noreferrer">View official proposal →</a>
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex min-h-[280px] flex-col justify-center p-10">
+                <h1 className="font-serif text-2xl font-bold text-foreground">No opportunities match these filters</h1>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">Try another category or priority, or clear the filters to view every available opportunity.</p>
+              </div>
+            )}
+          </Card>
+
+          <div className="grid gap-6 md:grid-cols-[1.05fr_1.45fr]">
+            <section id="opportunities">
+              <div className="mb-3 flex items-baseline justify-between">
+                <h2 className="text-lg font-semibold">Other opportunities</h2>
+                {items.length > 1 && <span className="text-sm text-primary">{items.length - 1} more</span>}
+              </div>
+              <div className="flex flex-col gap-3">
+                {items.slice(1, 4).map((proposal) => (
+                  <Link key={proposal.id} href={`/opportunities/${proposal.id}`} className="block rounded-xl border bg-card p-4 no-underline transition-colors hover:border-primary/50">
+                    <Badge variant="muted" className="mb-2">{proposal.category}</Badge>
+                    <b className="block text-sm leading-snug text-foreground">{proposal.name}</b>
+                    <small className="mt-2 block text-xs text-muted-foreground">{proposal.source} · Due {fmt(proposal.due_date)}</small>
+                  </Link>
+                ))}
+              </div>
+            </section>
+
+            <section className="flex flex-col gap-4">
+              <Card>
+                <CardContent className="pt-6">
+                  <Label>Live pipeline</Label>
+                  <div className="mt-4 flex items-center gap-8">
+                    <div className="flex items-baseline gap-2">
+                      <b className="font-serif text-2xl">{data.count}</b>
+                      <span className="text-xs leading-tight text-muted-foreground">Matches<br />identified</span>
+                    </div>
+                    <div className="flex items-baseline gap-2">
+                      <b className="font-serif text-2xl">{high}</b>
+                      <span className="text-xs leading-tight text-muted-foreground">High<br />priority</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-6">
+                  <Label>Monitor status</Label>
+                  <p className="mt-3 flex items-center gap-2 text-sm text-foreground">
+                    <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
+                    {loading ? 'Refreshing latest results' : 'Ready for review'}
+                  </p>
+                  <small className="mt-1 block text-xs text-muted-foreground">{data.generated_at ? `Last updated ${new Date(data.generated_at).toLocaleString()}` : 'No result snapshot yet'}</small>
+                  <Button onClick={load} className="mt-4 w-full sm:w-auto">Refresh dashboard</Button>
+                </CardContent>
+              </Card>
+            </section>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card id="intake">
+              <CardHeader className="gap-2">
+                <Label>Recurring monitoring</Label>
+                <CardTitle>Suggest a proposal website</CardTitle>
+                <p className="text-sm text-muted-foreground">Add a tender, donor, or ministry portal for the team to review. Approved websites are checked in future monitor runs.</p>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={submitSources} className="flex flex-col gap-3">
+                  <Textarea value={urls} onChange={(event) => setUrls(event.target.value)} placeholder={'https://example.gov/tenders\nhttps://example.org/funding'} required />
+                  <Button disabled={saving} type="submit" className="self-start">{saving ? 'Submitting…' : 'Submit sources'}</Button>
+                  {notice && <p className="text-sm text-teal">{notice}</p>}
+                </form>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="gap-2">
+                <Label>One-off analysis</Label>
+                <CardTitle>Analyse an opportunity now</CardTitle>
+                <p className="text-sm text-muted-foreground">Paste one public opportunity page for an immediate relevance score, eligibility notes, and deadline. It will not be added to recurring monitoring.</p>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={analyse} className="flex flex-col gap-3">
+                  <Input type="url" value={analysisUrl} onChange={(event) => setAnalysisUrl(event.target.value)} placeholder="https://example.org/opportunity" required />
+                  <Button disabled={analysing} type="submit" className="self-start">{analysing ? 'Analysing…' : 'Analyse URL'}</Button>
+                  {analysis && (
+                    <Alert variant={analysis.error ? 'destructive' : analysis.warning ? 'warning' : 'success'}>
+                      <AlertDescription>
+                        {analysis.error || `${analysis.title || 'Opportunity'} — ${analysis.recommended_action || 'Review'} · Due ${analysis.due_date || 'Not stated'}${analysis.warning ? ` — ${analysis.warning}` : ''}`}
+                        {analysis.blockedUrl && <> <a className="font-semibold underline" href={analysis.blockedUrl} target="_blank" rel="noreferrer">Open official page ↗</a></>}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+
+        <aside className="flex flex-col gap-4">
+          <Card>
+            <CardContent className="pt-6">
+              <h2 className="mb-4 text-xs font-bold uppercase tracking-wide text-muted-foreground">Opportunity analysis</h2>
+              <b className="font-serif text-3xl">{data.count}</b>
+              <p className="text-sm text-muted-foreground">Total matches</p>
+              <div className="mt-5 space-y-4">
+                <div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-full bg-destructive not-italic" />High priority</span>
+                    <span className="text-muted-foreground">{high}</span>
+                  </div>
+                  <div className="mt-1.5 h-2 rounded-full bg-secondary"><div className="h-full rounded-full bg-destructive" style={{ width: `${data.count ? high / data.count * 100 : 0}%` }} /></div>
+                </div>
+                <div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-full bg-teal not-italic" />Review queue</span>
+                    <span className="text-muted-foreground">{Math.max(data.count - high, 0)}</span>
+                  </div>
+                  <div className="mt-1.5 h-2 rounded-full bg-secondary"><div className="h-full rounded-full bg-teal" style={{ width: `${data.count ? Math.max(data.count - high, 0) / data.count * 100 : 0}%` }} /></div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <h2 className="mb-1 text-xs font-bold uppercase tracking-wide text-muted-foreground">Priority queue</h2>
+              <div className="divide-y">
+                {items.slice(0, 5).map((proposal, index) => (
+                  <Link key={proposal.id} href={`/opportunities/${proposal.id}`} className="flex gap-3 py-3.5 text-foreground no-underline">
+                    <strong className="text-xl font-bold text-muted/70">{index + 1}</strong>
+                    <span className="min-w-0 text-sm font-semibold leading-snug">
+                      <span className="line-clamp-3">{proposal.name}</span>
+                      <small className="mt-1 block font-normal text-muted-foreground">{proposal.source}</small>
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </aside>
+      </div>
+    </main>
+  );
 }
