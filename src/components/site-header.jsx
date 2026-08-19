@@ -22,7 +22,7 @@ export default function SiteHeader({ active = '', search, brand = PROPOSAL_MONIT
     <header className="border-t-[3px] border-t-foreground border-b bg-card">
       <div className="container flex h-[72px] items-center gap-6 md:h-[106px] md:gap-16">
         <Link href={home} className="relative flex shrink-0 items-center gap-2 text-foreground no-underline">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary font-bold text-primary-foreground md:h-[52px] md:w-[52px]">{brand.logoInitials}</span>
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-icon font-bold text-primary-foreground md:h-[52px] md:w-[52px]">{brand.logoInitials}</span>
           <span className="flex flex-col">
             <b className="font-serif text-[22px] font-bold leading-none md:text-[28px]">{brand.name}</b>
             <small className="hidden text-xs text-muted-foreground md:absolute md:top-[63px] md:block">{brand.tagline}</small>

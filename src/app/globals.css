@@ -34,17 +34,23 @@
 
     --brand-teal: 175 77% 26%;
     --brand-gold: 43 77% 61%;
+    --brand-icon: 208 69% 33%;
 
     --radius: 0.6rem;
   }
 
   /* Pathways Technologies: a separately branded tenant sharing this codebase
      (its own source list and data, see src/lib/brand.js). Colors are taken
-     directly from pathwaystechnologies.com's own stylesheet (#1863DC / #EC8425),
-     not approximated from the logo. --brand-teal is reused as this tenant's
-     secondary accent (rendered orange here) rather than introducing a second
-     token name, since every component already reads that color through a
-     CSS variable. */
+     directly from pathwaystechnologies.com's own stylesheet (#1863DC blue /
+     #EC8425 orange), not approximated from the logo. The real logo pairs a
+     blue wordmark with a solid orange icon mark and alternates blue/orange
+     in its tagline, so orange is a real second brand color here, not a
+     stray accent: it drives the logo badge (--brand-icon) and every
+     hover/active/highlighted surface (--accent), on top of --brand-teal
+     already carrying it for badges, progress bars, and success alerts.
+     --brand-teal keeps its literal name rather than introducing a second
+     token, since every component already reads that color through a CSS
+     variable. */
   [data-brand='pathways'] {
     --background: 210 20% 98%;
     --foreground: 0 0% 13%;
@@ -64,8 +70,8 @@
     --muted: 210 20% 94%;
     --muted-foreground: 0 0% 40%;
 
-    --accent: 217 90% 96%;
-    --accent-foreground: 217 80% 30%;
+    --accent: 29 90% 95%;
+    --accent-foreground: 29 70% 32%;
 
     --destructive: 0 71% 58%;
     --destructive-foreground: 0 0% 100%;
@@ -76,6 +82,7 @@
 
     --brand-teal: 29 84% 54%;
     --brand-gold: 43 77% 61%;
+    --brand-icon: 29 84% 54%;
   }
 }
 

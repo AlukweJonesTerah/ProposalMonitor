@@ -55,6 +55,9 @@ module.exports = {
         gold: {
           DEFAULT: 'hsl(var(--brand-gold))',
         },
+        icon: {
+          DEFAULT: 'hsl(var(--brand-icon))',
+        },
       },
       borderRadius: {
         lg: 'var(--radius)',
