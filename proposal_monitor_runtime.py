@@ -420,15 +420,16 @@ def sync_workflow(proposals: list[dict[str, str]], prefix: str = "") -> dict[str
     return state
 
 
-def source_register_rows(sources: list[dict] | None) -> list[list[str]]:
+def source_register_rows(sources: list[dict] | None, prefix: str = "") -> list[list[str]]:
     """Show both configured and user-submitted sources in the workbook."""
     rows = []
     for source in sources or []:
         rows.append([source.get("name", ""), ", ".join(source.get("start_urls", [])), source.get("source_type", ""), "", source.get("check_frequency", ""), str(source.get("active", True)).lower(), source.get("notes", "")])
-    if not PENDING_SOURCE_FILE.exists():
+    pending_file = OUTPUT / f"{prefix}pending_source_intake.json"
+    if not pending_file.exists():
         return rows
     try:
-        pending = json.loads(PENDING_SOURCE_FILE.read_text(encoding="utf-8"))
+        pending = json.loads(pending_file.read_text(encoding="utf-8"))
     except json.JSONDecodeError:
         print("Warning: pending source intake is not valid JSON; it was omitted from the workbook.")
         return rows
@@ -439,7 +440,16 @@ def source_register_rows(sources: list[dict] | None) -> list[list[str]]:
     return rows
 
 
-def export(proposals: list[dict[str, str]], output: Path, workflow_state: dict[str, dict[str, str]], sources: list[dict] | None = None, keywords: list[str] | None = None) -> None:
+def export(
+    proposals: list[dict[str, str]],
+    output: Path,
+    workflow_state: dict[str, dict[str, str]],
+    sources: list[dict] | None = None,
+    keywords: list[str] | None = None,
+    prefix: str = "",
+    owner: str = "Olivia",
+    mygov_alert_enabled: bool = True,
+) -> None:
     book = Workbook()
     proposals_sheet = book.active
     proposals_sheet.title = "Proposals"
@@ -458,18 +468,21 @@ def export(proposals: list[dict[str, str]], output: Path, workflow_state: dict[s
     run_date = date.today()
     workplan_headings = ["Task", "Owner", "Start date", "Due date", "Status", "Dependencies", "Notes"]
     workplan_rows = [
-        ["Provide and prioritise source website links", "Olivia", run_date, run_date + timedelta(days=2), "Not started", "", "Add approved ministry and donor portals to the source intake."],
-        ["Confirm keywords and exclusion terms", "Olivia", run_date, run_date + timedelta(days=2), "Not started", "Source list", "Confirm analytics, data science, training, and exclusion terms."],
-        ["Add approved sources and complete a test scrape", "Technical owner", run_date + timedelta(days=3), run_date + timedelta(days=5), "Not started", "Olivia source links", "Activate and validate each source before recurring monitoring."],
-        ["Configure Tuesday/Thursday myGov alert recipient", "Olivia / Technical owner", run_date + timedelta(days=3), run_date + timedelta(days=7), "Not started", "SMTP access", "Set alert recipient and SMTP details in .env."],
+        ["Provide and prioritise source website links", owner, run_date, run_date + timedelta(days=2), "Not started", "", "Add approved ministry and donor portals to the source intake."],
+        ["Confirm keywords and exclusion terms", owner, run_date, run_date + timedelta(days=2), "Not started", "Source list", "Confirm analytics, data science, training, and exclusion terms."],
+        ["Add approved sources and complete a test scrape", "Technical owner", run_date + timedelta(days=3), run_date + timedelta(days=5), "Not started", f"{owner} source links", "Activate and validate each source before recurring monitoring."],
+    ]
+    if mygov_alert_enabled:
+        workplan_rows.append(["Configure Tuesday/Thursday myGov alert recipient", f"{owner} / Technical owner", run_date + timedelta(days=3), run_date + timedelta(days=7), "Not started", "SMTP access", "Set alert recipient and SMTP details in .env."])
+    workplan_rows += [
         ["Review new opportunities and assign a proposal owner", "Project team", run_date + timedelta(days=5), run_date + timedelta(days=12), "Ongoing", "Proposal tracker", "Update proposal status, owner, and notes after each scan."],
-        ["Define content-folder approval and posting workflow", "Olivia / Content owner", run_date + timedelta(days=7), run_date + timedelta(days=14), "Not started", "Content folder", "Confirm approval steps before connecting posting automation."],
+        ["Define content-folder approval and posting workflow", f"{owner} / Content owner", run_date + timedelta(days=7), run_date + timedelta(days=14), "Not started", "Content folder", "Confirm approval steps before connecting posting automation."],
         ["Review performance and refine keywords", "Project team", run_date + timedelta(days=14), run_date + timedelta(days=21), "Not started", "Two weeks of results", "Remove irrelevant results and add useful new terms."],
     ]
     add_sheet(book, "Workplan", workplan_headings, workplan_rows)
     for cell in book["Workplan"]["C"][1:] + book["Workplan"]["D"][1:]:
         cell.number_format = "yyyy-mm-dd"
-    add_sheet(book, "Website Register", ["Source name", "Website URL", "Type", "Priority", "Check frequency", "Active", "Notes"], source_register_rows(sources))
+    add_sheet(book, "Website Register", ["Source name", "Website URL", "Type", "Priority", "Check frequency", "Active", "Notes"], source_register_rows(sources, prefix))
     add_sheet(book, "Keywords", ["Keyword", "Category", "Include / Exclude", "Notes"], [[keyword, category([keyword]), "Include", ""] for keyword in (keywords or [])])
     add_sheet(book, "Content Calendar", ["Content item", "Platform", "Owner", "Approval status", "Posting date", "Published", "Notes"], [])
     queue_rows = []
@@ -479,7 +492,11 @@ def export(proposals: list[dict[str, str]], output: Path, workflow_state: dict[s
     add_sheet(book, "Workflow Queue", ["Tracker ID", "Proposal", "Next action", "Owner", "Review due date", "Status", "Link"], queue_rows)
     for cell in book["Workflow Queue"]["E"][1:]:
         cell.number_format = "yyyy-mm-dd"
-    add_sheet(book, "Workflows", ["Workflow", "Trigger", "Automated action", "Owner", "Output / escalation"], [["Proposal discovery", "Scheduled monitoring finds a keyword match", "Create or update a persistent review task", "Project team", "Workflow Queue; review due date is three days before tender close."], ["myGov alert", "Tuesday/Thursday scheduler finds new matches", "Send one email per new opportunity", "Project team", "Scheduler waits for SMTP configuration and prevents repeat alerts."], ["Proposal review", "Workflow Queue contains Review required", "Assess relevance and set bid decision", "Proposal owner", "Update the workflow state using the command below."], ["Content publishing", "Content receives approval", "Queue item for posting automation", "Content owner", "To be connected when the content folder/platform is provided."]])
+    workflow_rows = [["Proposal discovery", "Scheduled monitoring finds a keyword match", "Create or update a persistent review task", "Project team", "Workflow Queue; review due date is three days before tender close."]]
+    if mygov_alert_enabled:
+        workflow_rows.append(["myGov alert", "Tuesday/Thursday scheduler finds new matches", "Send one email per new opportunity", "Project team", "Scheduler waits for SMTP configuration and prevents repeat alerts."])
+    workflow_rows += [["Proposal review", "Workflow Queue contains Review required", "Assess relevance and set bid decision", "Proposal owner", "Update the workflow state using the command below."], ["Content publishing", "Content receives approval", "Queue item for posting automation", "Content owner", "To be connected when the content folder/platform is provided."]]
+    add_sheet(book, "Workflows", ["Workflow", "Trigger", "Automated action", "Owner", "Output / escalation"], workflow_rows)
     output.parent.mkdir(exist_ok=True)
     book.save(output)
 

@@ -241,7 +241,15 @@ def run_monitor(args) -> int:
     expired = [item for item in proposals if is_expired(item)]
     proposals = merge_with_dashboard_snapshot(proposals, prefix=args.prefix)
     workflow_state = sync_workflow(proposals, prefix=args.prefix)
-    export(proposals, args.output, workflow_state, config.get("sources"), config.get("keywords"))
+    # myGov's Tuesday/Thursday alert is only ever scheduled for the default
+    # (unprefixed) tenant; a prefixed tenant like Pathways Technologies has no
+    # named project owner in this codebase, so the workbook uses a generic role.
+    export(
+        proposals, args.output, workflow_state, config.get("sources"), config.get("keywords"),
+        prefix=args.prefix,
+        owner="Olivia" if not args.prefix else "Project owner",
+        mygov_alert_enabled=not args.prefix,
+    )
     write_dashboard_results(proposals, workflow_state, prefix=args.prefix)
     if store: store.finish(run_id, len(candidates), len(classified), len(proposals))
     print(f"Saved {len(proposals)} active validated proposal(s) from {len(classified)} classification(s) to {args.output}; excluded {len(expired)} expired item(s).")
