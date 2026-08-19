@@ -37,7 +37,10 @@ logging.getLogger("pypdf").setLevel(logging.ERROR)
 ROOT = Path(__file__).resolve().parent
 OUTPUT = ROOT / "proposal_output"
 WORKFLOW_STATE_FILE = OUTPUT / "proposal_workflow_state.json"
-PENDING_SOURCE_FILE = ROOT / "Migrations" / "pending_source_intake.json"
+# The live, editable copy the website reads and writes (src/lib/source-handlers.js),
+# not Migrations/pending_source_intake.json, which is only the seed template
+# copied there once on first boot and never updated after that.
+PENDING_SOURCE_FILE = OUTPUT / "pending_source_intake.json"
 DISCOVERY_TERMS = ("tender", "proposal", "rfp", "consultancy", "procurement", "grant", "funding", "certification", "certification offer", "paper proposal", "call for papers")
 ICT_TERMS = ("ict", "information technology", "technology", "digital", "software", "computer", "data", "analytics", "artificial intelligence", "machine learning", "cyber", "cloud", "network", "blockchain", "automation", "systems development")
 REQUEST_INTERVAL_SECONDS = 1.5
@@ -430,6 +433,8 @@ def source_register_rows(sources: list[dict] | None) -> list[list[str]]:
         print("Warning: pending source intake is not valid JSON; it was omitted from the workbook.")
         return rows
     for item in pending:
+        if item.get("status") != "pending_review":
+            continue
         rows.append(["User submitted", item.get("url", ""), "Pending review", "", "", "false", f"Submitted {item.get('submitted_at', '')}"])
     return rows
 

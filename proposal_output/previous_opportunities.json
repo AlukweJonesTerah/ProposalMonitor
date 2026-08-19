@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-19T08:51:57.055446+00:00",
+  "generated_at": "2026-08-19T11:12:46.295680+00:00",
   "count": 5,
   "proposals": [
     {
@@ -13,7 +13,7 @@
       "match_reason": "Matched configured ICT keyword(s): analytics, training.",
       "eligibility_notes": "Review source document for eligibility requirements.",
       "recommended_action": "Review",
-      "archived_at": "2026-08-19T06:57:30.760771+00:00"
+      "archived_at": "2026-08-19T11:12:46.295680+00:00"
     },
     {
       "name": ". NATIONAL ENVIRONMENT MANAGEMENT AUTHORITY SUBJECT: SUPPLY, DELIVERY AND INSTALLATION OF SMART TV SCREENS (RESERVED FOR PWD FIRMS ONLY) TENDER NO: NEMA/T/05/20",
@@ -26,7 +26,7 @@
       "match_reason": "Matched configured ICT keyword(s): analysis, training.",
       "eligibility_notes": "Review source document for eligibility requirements.",
       "recommended_action": "Review",
-      "archived_at": "2026-08-19T06:57:30.760771+00:00"
+      "archived_at": "2026-08-19T11:12:46.295680+00:00"
     },
     {
       "name": "Page 1 of 8 REPUBLIC OF KENYA NATIONAL ENVIRONMENT MANAGEMENT AUTHORITY (NEMA) INTERNATIONAL TENDER NOTICE REQUEST FOR EXPRESSION OF INTEREST (EOI) FOR PRE-VERI",
@@ -39,20 +39,20 @@
       "match_reason": "Matched configured ICT keyword(s): analysis, training.",
       "eligibility_notes": "Review source document for eligibility requirements.",
       "recommended_action": "Review",
-      "archived_at": "2026-08-19T06:57:30.760771+00:00"
+      "archived_at": "2026-08-19T11:12:46.295680+00:00"
     },
     {
-      "name": "Climate Change AI Innovation Grants 2024",
-      "category": "Digital Health & Climate Tech",
+      "name": "Call for Proposals: Climate Change AI Innovation Grants 2024",
+      "category": "Data science",
       "link": "https://www.climatechange.ai/calls/innovation_grants_2024",
       "due_date": "2024-09-15",
       "source": "climatechange.ai",
-      "keywords": "machine learning, artificial intelligence, funding opportunity, grant application",
+      "keywords": "machine learning, artificial intelligence, training",
       "relevance_score": "High",
-      "match_reason": "This is an active grant and funding opportunity supporting research and projects at the intersection of machine learning/artificial intelligence and climate change.",
-      "eligibility_notes": "Principal Investigator must be affiliated with an accredited university in one of the 38 OECD Member Countries. Co-Investigators can be outside OECD countries.",
-      "recommended_action": "Pursue",
-      "archived_at": "2026-08-19T08:51:57.055446+00:00"
+      "match_reason": "Matched configured ICT keyword(s): machine learning, artificial intelligence, training.",
+      "eligibility_notes": "Review source document for eligibility requirements.",
+      "recommended_action": "Review",
+      "archived_at": "2026-08-19T11:12:46.295680+00:00"
     },
     {
       "name": "Kenya Reinsurance Corporation Limited - Supply and installation of agentic AI automation system with Robotic Process Automation (RPA) integration",
