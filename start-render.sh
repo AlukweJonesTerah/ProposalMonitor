@@ -34,14 +34,33 @@ python proposal_scheduler.py &
 monitor_pid=$!
 python mygov_alert_scheduler.py &
 alert_pid=$!
-
-stop() {
-  kill -TERM "$monitor_pid" "$alert_pid" 2>/dev/null || true
-  wait "$monitor_pid" "$alert_pid" 2>/dev/null || true
-  exit 0
-}
-
-trap stop INT TERM
 node server.js &
 web_pid=$!
-wait "$web_pid"
+
+terminate_all() {
+  kill -TERM "$monitor_pid" "$alert_pid" "$web_pid" 2>/dev/null || true
+  wait "$monitor_pid" "$alert_pid" "$web_pid" 2>/dev/null || true
+}
+
+trap 'terminate_all; exit 0' INT TERM
+
+# /api/health only proves the Next.js server answers; it says nothing about
+# the scraper or myGov alert loops. Without this watchdog, either background
+# process can die silently (an unhandled exception, OOM) while the container
+# keeps reporting healthy and proposal_output/ goes stale for days. Exit
+# non-zero so Render's restart policy brings all three processes back together.
+while true; do
+  sleep 30
+  if ! kill -0 "$monitor_pid" 2>/dev/null; then
+    echo "proposal_scheduler.py exited unexpectedly; restarting the container." >&2
+    terminate_all; exit 1
+  fi
+  if ! kill -0 "$alert_pid" 2>/dev/null; then
+    echo "mygov_alert_scheduler.py exited unexpectedly; restarting the container." >&2
+    terminate_all; exit 1
+  fi
+  if ! kill -0 "$web_pid" 2>/dev/null; then
+    echo "node server.js exited unexpectedly; restarting the container." >&2
+    terminate_all; exit 1
+  fi
+done

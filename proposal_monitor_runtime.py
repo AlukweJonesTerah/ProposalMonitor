@@ -218,11 +218,16 @@ def collect(session: requests.Session, source: dict, keywords: list[str]) -> lis
             if allowed(canonical, source["allowed_domains"]) and canonical not in start_pages and not is_portal_index:
                 candidates[canonical] = label
 
+    # Filter for relevance before applying max_links: a portal's navigation
+    # menu can fill the first dozens of links, which would otherwise push
+    # genuine tender links past the cap before they are ever considered.
+    relevant = [
+        (link, label) for link, label in candidates.items()
+        if any(word.lower() in f"{label} {link}".lower() for word in keywords)
+        or any(term in f"{label} {link}".lower() for term in DISCOVERY_TERMS)
+    ]
     results = []
-    for link, label in list(candidates.items())[: source.get("max_links", 80)]:
-        hint = f"{label} {link}".lower()
-        if not any(word.lower() in hint for word in keywords) and not any(term in hint for term in DISCOVERY_TERMS):
-            continue
+    for link, label in relevant[: source.get("max_links", 80)]:
         try:
             kind, body = fetch(session, link)
         except (requests.RequestException, OSError):

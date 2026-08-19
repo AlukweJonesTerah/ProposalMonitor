@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-13T06:14:48.281239+00:00",
+  "generated_at": "2026-08-19T06:12:47.118780+00:00",
   "count": 5,
   "proposals": [
     {
@@ -13,7 +13,7 @@
       "match_reason": "Matched configured ICT keyword(s): analytics, training.",
       "eligibility_notes": "Review source document for eligibility requirements.",
       "recommended_action": "Review",
-      "archived_at": "2026-08-12T05:40:58.364438+00:00"
+      "archived_at": "2026-08-13T18:30:44.035643+00:00"
     },
     {
       "name": ". NATIONAL ENVIRONMENT MANAGEMENT AUTHORITY SUBJECT: SUPPLY, DELIVERY AND INSTALLATION OF SMART TV SCREENS (RESERVED FOR PWD FIRMS ONLY) TENDER NO: NEMA/T/05/20",
@@ -26,46 +26,46 @@
       "match_reason": "Matched configured ICT keyword(s): analysis, training.",
       "eligibility_notes": "Review source document for eligibility requirements.",
       "recommended_action": "Review",
-      "archived_at": "2026-08-12T05:40:58.364438+00:00"
+      "archived_at": "2026-08-13T18:30:44.035643+00:00"
     },
     {
-      "name": "Request for Expression of Interest (EOI) for Designing of a Comprehensive In-Country Waste Collection and Management System",
+      "name": "NEMA Request for Expression of Interest (EOI) for Designing of a Comprehensive In-Country Waste Collection and Management System",
       "category": "Other",
       "link": "https://nema.go.ke/wp-content/uploads/2025/12/Tender-no.-NEMAEOI012025-2026_EOI_International-Tender.pdf",
       "due_date": "2025-12-19",
       "source": "National Environment Management Authority",
       "keywords": "analysis, training",
-      "relevance_score": "High",
-      "match_reason": "The EOI requests a consultant to design a comprehensive digital waste management architecture, information system, web-based payment tracking gateway, database, and provide training.",
-      "eligibility_notes": "The consultant must have at least 5 years of experience, proven technical/managerial capability, and 3 reference assignments of similar size in the last 5 years.",
+      "relevance_score": "Medium",
+      "match_reason": "Requires designing a comprehensive waste management information system, web-based tracking applications, database development, digital monitoring platforms, stakeholder analysis, and team training.",
+      "eligibility_notes": "Firms must demonstrate at least 5 years of experience in business, provide details of similar assignments, and meet regulatory/tax compliance in Kenya or their respective origin country.",
       "recommended_action": "Review",
-      "archived_at": "2026-08-13T06:14:48.281239+00:00"
+      "archived_at": "2026-08-19T06:02:28.938825+00:00"
     },
     {
-      "name": "Call for Proposals: Climate Change AI Innovation Grants 2024",
+      "name": "Climate Change AI Innovation Grants 2024",
       "category": "Digital Health & Climate Tech",
       "link": "https://www.climatechange.ai/calls/innovation_grants_2024",
       "due_date": "2024-09-15",
       "source": "climatechange.ai",
-      "keywords": "artificial intelligence, machine learning, funding opportunity",
+      "keywords": "artificial intelligence, machine learning, data science, grant application, funding opportunity",
       "relevance_score": "High",
-      "match_reason": "This is an active funding opportunity for projects utilizing artificial intelligence and machine learning to address climate change challenges.",
-      "eligibility_notes": "Principal Investigator must be affiliated with an accredited university in one of the 38 OECD Member Countries. Co-Investigators can be outside OECD countries (such as Africa) and from non-research organizations.",
+      "match_reason": "High-value grant program explicitly funding projects at the intersection of artificial intelligence, machine learning, and climate change.",
+      "eligibility_notes": "Principal Investigator must be affiliated with an accredited university in one of the 38 OECD Member Countries. Co-Investigators can be from any country.",
       "recommended_action": "Review",
-      "archived_at": "2026-08-13T06:14:48.281239+00:00"
+      "archived_at": "2026-08-19T06:12:47.118780+00:00"
     },
     {
-      "name": "Supply and installation of agentic AI automation system with Robotic Process Automation (RPA) integration",
-      "category": "Other",
+      "name": "Kenya Reinsurance Corporation Limited - Supply and installation of agentic AI automation system with Robotic Process Automation (RPA) integration",
+      "category": "Data science",
       "link": "https://gaa.go.ke/sites/default/files/2026-07/Kenya%20Reinsurance%20Corporation%20Limited%20Invitation%20to%20Tender.pdf",
       "due_date": "2026-08-04",
       "source": "myGov Kenya",
-      "keywords": "artificial intelligence",
+      "keywords": "artificial intelligence, machine learning",
       "relevance_score": "High",
-      "match_reason": "The tender is for the procurement and implementation of an agentic artificial intelligence system integrated with Robotic Process Automation (RPA).",
-      "eligibility_notes": "Open national tender. Bidders must provide a tender security of Kshs. 500,000.",
+      "match_reason": "The tender is specifically for the supply and installation of an agentic AI automation system integrating Robotic Process Automation, aligning with artificial intelligence and machine learning keywords.",
+      "eligibility_notes": "National Tender requiring a tender security of Kshs. 500,000.",
       "recommended_action": "Pursue",
-      "archived_at": "2026-08-13T06:14:48.281239+00:00"
+      "archived_at": "2026-08-19T06:02:28.938825+00:00"
     }
   ]
 }

@@ -51,11 +51,16 @@ def collect_raw(session: requests.Session, source: dict, keywords: list[str]) ->
             label = clean(anchor.get_text(" ", strip=True))
             if allowed(url, source["allowed_domains"]) and url not in start_pages and label.casefold() not in {"all tenders", "tenders", "procurement"}:
                 links[url] = label
+    # Filter for relevance before applying max_links: a portal's navigation
+    # menu can fill the first dozens of links, which would otherwise push
+    # genuine tender links past the cap before they are ever considered.
+    relevant = [
+        (url, label) for url, label in links.items()
+        if any(word.lower() in f"{label} {url}".lower() for word in keywords)
+        or any(term in f"{label} {url}".lower() for term in DISCOVERY_TERMS)
+    ]
     raw = []
-    for url, label in list(links.items())[: source.get("max_links", 80)]:
-        hint = f"{label} {url}".lower()
-        if not any(word.lower() in hint for word in keywords) and not any(term in hint for term in DISCOVERY_TERMS):
-            continue
+    for url, label in relevant[: source.get("max_links", 80)]:
         try:
             kind, body = fetch(session, url)
         except (requests.RequestException, OSError):
