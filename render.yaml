@@ -50,4 +50,4 @@ services:
       - key: MYGOV_ALERT_MINUTE
         value: "0"
       - key: ENABLE_PUBLIC_WEB_DISCOVERY
-        value: "false"
+        value: "true"

@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from urllib.parse import urlparse
@@ -67,18 +68,21 @@ def search_source(source: dict, keywords: list[str], limit: int) -> list[dict]:
     return [{**item, "source": source["name"]} for item in web if item.get("url")]
 
 
-def candidate_pages(sources: list[dict], keywords: list[str], url_limit: int, batch_limit: int) -> list[dict]:
+def candidate_pages(sources: list[dict], keywords: list[str], url_limit: int, batch_limit: int) -> tuple[list[dict], int]:
+    """Return discovered pages and how many source searches failed (for outage detection)."""
     pages: list[dict] = []
+    failures = 0
     with ThreadPoolExecutor(max_workers=batch_limit) as pool:
-        futures = [pool.submit(search_source, source, keywords, url_limit) for source in sources]
+        futures = {pool.submit(search_source, source, keywords, url_limit): source for source in sources}
         for future in as_completed(futures):
             try:
                 pages.extend(future.result())
             except (requests.RequestException, RuntimeError) as error:
-                print(f"Warning: Firecrawl search skipped: {error}")
+                failures += 1
+                print(f"Warning: Firecrawl search skipped for {futures[future]['name']}: {error}")
     # A URL may be returned for more than one query/source.  Preserve first result.
     unique = {page["url"]: page for page in pages}
-    return list(unique.values())[:url_limit]
+    return list(unique.values())[:url_limit], failures
 
 
 @traceable(name="proposal-public-web-discovery", run_type="tool")
@@ -161,13 +165,23 @@ def main() -> int:
         raise SystemExit("No active approved sources found.")
     url_limit = max(1, int(os.getenv("URL_LIMIT", "3")))
     batch_limit = max(1, int(os.getenv("BATCH_LIMIT", "2")))
-    pages = candidate_pages(sources, config["keywords"], url_limit, batch_limit)
+    pages, failed = candidate_pages(sources, config["keywords"], url_limit, batch_limit)
+    attempted = len(sources)
     if os.getenv("ENABLE_PUBLIC_WEB_DISCOVERY", "false").strip().lower() in {"1", "true", "yes", "on"}:
         discovery_limit = max(1, int(os.getenv("PUBLIC_WEB_DISCOVERY_LIMIT", "5")))
+        attempted += 1
         try:
             pages.extend(public_web_pages(config["keywords"], discovery_limit))
         except (requests.RequestException, RuntimeError) as error:
+            failed += 1
             print(f"Warning: public-web discovery skipped: {error}")
+    if attempted and failed == attempted:
+        # Every Firecrawl call failed (not merely "no relevant results"): this is
+        # an outage or account issue (e.g. billing), not an empty search result.
+        # Exit non-zero so the scheduler's log line flags this run as failed
+        # instead of it looking identical to a normal "nothing new" cycle.
+        print(f"ERROR: all {attempted} Firecrawl search(es) failed this run; check FIRECRAWL_API_KEY and the Firecrawl account status/billing at https://firecrawl.dev. No AI-researched opportunities could be discovered.", file=sys.stderr)
+        return 1
     pages = list({page["url"]: page for page in pages}.values())
     proposals = extract_opportunities(pages, config["keywords"]) if pages else []
     expired = [item for item in proposals if is_expired(item)]
